@@ -1,0 +1,81 @@
+{
+    "author": "nowtwo-llc",
+    "description": "The best way to get hedgehogs to explode all over a website.",
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
+    },
+    "files": [
+        "dist/"
+    ],
+    "dependencies": {
+        "konami": "^1.6.2"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.5.5",
+        "@typescript-eslint/eslint-plugin": "^2.0.1-alpha.19",
+        "@typescript-eslint/parser": "2.0.0",
+        "chai": "^4.2.0",
+        "commitizen": "^4.0.3",
+        "css-loader": "^3.2.0",
+        "cz-conventional-changelog": "3.0.2",
+        "eslint": "6.1.0",
+        "eslint-config-airbnb-base": "14.0.0",
+        "eslint-config-prettier": "^6.1.0",
+        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-prettier": "^3.1.0",
+        "http-server": "^0.11.1",
+        "husky": "^3.0.4",
+        "karma": "^4.2.0",
+        "karma-chai": "^0.1.0",
+        "karma-chrome-launcher": "^3.0.0",
+        "karma-mocha": "^1.3.0",
+        "lint-staged": "^9.2.3",
+        "mini-css-extract-plugin": "^0.8.0",
+        "mocha": "^6.2.0",
+        "optimize-css-assets-webpack-plugin": "^5.0.3",
+        "prettier": "^1.18.2",
+        "prettier-eslint": "^9.0.0",
+        "prettier-eslint-cli": "^5.0.0",
+        "stylelint": "^10.1.0",
+        "stylelint-config-prettier": "^5.2.0",
+        "stylelint-prettier": "^1.1.1",
+        "terser-webpack-plugin": "^1.4.1",
+        "ts-loader": "^6.0.4",
+        "typescript": "^3.5.3",
+        "webpack": "^4.39.2",
+        "webpack-cli": "^3.3.6"
+    },
+    "engines": {
+        "node": "^10.13.0",
+        "npm": "^5.6.0",
+        "yarn": "^1.9.4"
+    },
+    "licenses": [
+        {
+            "type": "ISC ©2019 Vivid Seats LLC All Rights Reserved",
+            "url": "https://nowtwo-llc.com/privacy.html"
+        }
+    ],
+    "main": "src/ts/hedgeHogify.ts",
+    "name": "hedgehogify",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fanxchange/venue-map-component"
+    },
+    "scripts": {
+        "build": "webpack --mode=development && mkdir -p example/dist && cp -r dist/ example/dist",
+        "commit": "git-cz",
+        "eslint:format": "prettier-eslint --eslint-config-path '.eslintrc' --write",
+        "eslint:report": "clear && echo 'Generating report in eslint-report.html...' && echo 'Generated file will be visible after command finishes' && eslint --fix --cache --color -o eslint-report.html --ignore-path '.tests/unit/VenueMapComponent.spec.js' -f html './src/**/*.ts' './tests/**/*.js'; clear; open eslint-report.html || xdg-open eslint-report.html",
+        "eslint": "eslint --fix --cache --color",
+        "postbuild": "echo \"\\x1b[92mBuild Complete!\\x1b[0m\"",
+        "serve": "http-server example -c-1 -o",
+        "stylelint": "stylelint --fix",
+        "test:e2e": "echo 'No e2e tests configured'",
+        "test:unit": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
+        "test": "yarn build && yarn test:unit && yarn test:e2e"
+    }
+}
