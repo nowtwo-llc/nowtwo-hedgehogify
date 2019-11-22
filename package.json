@@ -71,7 +71,9 @@
     "scripts": {
         "build": "nwb build-web-module --copy-files && ./cleanout.sh",
         "build:dev": "NWB_MODE=development nwb build-web-module --copy-files && ./cleanout.sh",
+        "clean": "nwb clean-module",
         "commit": "git-cz",
+        "docs": "typedoc --out docs/ src/HedgeHogify.ts && touch docs/.nojekyll && ./example.sh",
         "eslint:format": "prettier-eslint --eslint-config-path '.eslintrc' --write",
         "eslint:report": "clear && echo 'Generating report in eslint-report.html...' && echo 'Generated file will be visible after command finishes' && eslint --fix --cache --color -o eslint-report.html --ignore-path '.tests/unit/HedgeHogify.spec.js' -f html './src/**/*.ts' './tests/**/*.js'; clear; open eslint-report.html || xdg-open eslint-report.html",
         "eslint": "eslint --fix --cache --color",
@@ -79,8 +81,7 @@
         "lint": "lint-staged",
         "serve": "http-server example -c-1 -o",
         "stylelint": "stylelint --fix",
-        "test:e2e": "echo 'No e2e tests configured'",
-        "test:unit": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-        "test": "yarn build && yarn test:unit && yarn test:e2e"
+        "test:unit": "nwb test",
+        "test": "npm run clean && npm run build && npm run test:unit"
     }
 }
