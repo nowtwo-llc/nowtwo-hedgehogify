@@ -26,7 +26,17 @@ export class HedgeHogifyComponent {
         });
     }
 
-    public add(): void {
+    public burst(count = 50): void {
+        for (let i = 0; i < count; i += 1) {
+            this.add();
+        }
+
+        setTimeout(() => {
+            HedgeHogifyComponent.clear();
+        }, 10000);
+    }
+
+    private add(): void {
         this._hedgeHogifyCount += 1;
 
         // Create a container DIV for our hedgehog.
@@ -108,17 +118,7 @@ export class HedgeHogifyComponent {
         _divEl.appendChild(_imgEl);
     }
 
-    public burst(count = 50): void {
-        for (let i = 0; i < count; i += 1) {
-            this.add();
-        }
-
-        setTimeout(() => {
-            HedgeHogifyComponent.clear();
-        }, 10000);
-    }
-
-    public static clear(): void {
+    private static clear(): void {
         const elements = document.querySelectorAll('.hedgehogify-image');
 
         elements.forEach((el) => el.remove());

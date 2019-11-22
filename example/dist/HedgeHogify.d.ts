@@ -9,9 +9,9 @@ export declare class HedgeHogifyComponent {
     private _width;
     private _input;
     konami(callback: Function): void;
-    add(): void;
     burst(count?: number): void;
-    static clear(): void;
+    private add;
+    private static clear;
 }
 declare const _default: {
     HedgeHogifyComponent: typeof HedgeHogifyComponent;
