@@ -11,7 +11,7 @@
         "sourceMap": true,
         "allowSyntheticDefaultImports": true
     },
-    "include": ["src/**/*.ts", "test/**/*.js"],
+    "include": ["./src", "./test", "./demo", "**.js"],
     "exclude": ["node_modules/**"],
     "tsconfigRootDir": "src"
 }
