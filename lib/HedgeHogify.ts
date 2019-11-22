@@ -1,3 +1,5 @@
+import './HedgeHogify.css';
+
 export class HedgeHogifyComponent {
     private _hedgeHogifyCount = 0;
     private _hedgeHogifyUrl = 'https://classifylearning.com/hedgehogify/';
@@ -6,37 +8,36 @@ export class HedgeHogifyComponent {
     private _numType = 'px';
     private _height = 0;
     private _width = 0;
-
-    constructor() { }
+    private _input = '';
 
     public konami(callback: Function): void {
-        let input = '';
+        this._input = '';
         const key = '38384040373937396665';
 
-        document.addEventListener('keydown', function(ev) {
-            input += ('' + ev.keyCode);
-            if (input === key) {
+        document.addEventListener('keydown', (ev): Function | null => {
+            this._input += `${ev.keyCode}`;
+            if (this._input === key) {
                 return callback();
             }
-            if (!key.indexOf(input)) {
-                return;
+            if (key.indexOf(this._input)) {
+                this._input = `${ev.keyCode}`;
             }
-            input = ('' + ev.keyCode);
+            return null;
         });
     }
 
     public add(): void {
         this._hedgeHogifyCount += 1;
-    
+
         // Create a container DIV for our hedgehog.
-        let _divEl = document.createElement('div');
+        const _divEl = document.createElement('div');
         _divEl.style.position = 'fixed';
 
         // Prepare our lovely variables.
         const heightRandom = Math.random() * 0.75;
-        const documentEl = document.documentElement;        
+        const documentEl = document.documentElement;
 
-        if (typeof(window.innerHeight) == 'number') {
+        if (typeof window.innerHeight === 'number') {
             this._windowHeight = window.innerHeight;
             this._windowWidth = window.innerWidth;
         } else if (documentEl && documentEl.clientHeight) {
@@ -46,7 +47,6 @@ export class HedgeHogifyComponent {
             this._numType = '%';
             this._height = Math.round(this._height * 100);
         }
-
         // Setting the DIV element properties.
         _divEl.className = 'hedgehogify-image';
         _divEl.style.zIndex = String(10);
@@ -57,69 +57,74 @@ export class HedgeHogifyComponent {
 
         // Clicking 15 times summons a large hedgehog centered on the screen.
         // Super exciting...
-        if (this._hedgeHogifyCount == 15) {
-            _divEl.style.top = Math.max(0, Math.round((this._windowHeight - 530) / 2)) + 'px';
-            _divEl.style.left = Math.round((this._windowWidth - 530) / 2) + 'px';
+        if (this._hedgeHogifyCount === 15) {
+            _divEl.style.top = `${Math.max(0, Math.round((this._windowHeight - 530) / 2))}px`;
+            _divEl.style.left = `${Math.round((this._windowWidth - 530) / 2)}px`;
             _divEl.style.zIndex = String(1000);
-        // Otherwise we randomize the position of our hedgehog.
+            // Otherwise we randomize the position of our hedgehog.
         } else {
-            if (this._numType == 'px') {
-                _divEl.style.top = Math.round(this._windowHeight * heightRandom) + this._numType;
+            if (this._numType === 'px') {
+                _divEl.style.top = String(Math.round(this._windowHeight * heightRandom)) + this._numType;
             } else {
-                _divEl.style.top = this._height + this._numType;
+                _divEl.style.top = String(this._height) + this._numType;
             }
-            _divEl.style.left = Math.round(Math.random() * 90) + '%';
+            _divEl.style.left = `${Math.round(Math.random() * 90)}%`;
         }
-
-        let _imgEl = document.createElement('img');
+        const _imgEl = document.createElement('img');
         const currentTime = new Date();
         // This is our cache buster to make a new request for our hedgehog.
         let submitTime = currentTime.getTime();
 
-        if (this._hedgeHogifyCount == 15) {
+        if (this._hedgeHogifyCount === 15) {
             submitTime = 0;
         }
-
         // Construct the actual request to load a random hedgehog.
-        const requestUrl = this._hedgeHogifyUrl + 'randomize.php' +
-            '?r=' + submitTime + '&url=' + document.location.href;
-
+        const requestUrl = `${this._hedgeHogifyUrl}randomize.php?r=${submitTime}&url=${document.location.href}`;
         _imgEl.setAttribute('src', requestUrl);
-        _imgEl.style.width = (Math.floor(Math.random() * (350 - 100)) + 100) + 'px';
+        _imgEl.style.width = `${Math.floor(Math.random() * (350 - 100)) + 100}px`;
 
-        let that = this;
-        _divEl.onmouseover = function(ev) {
+        _divEl.onmouseover = (ev: MouseEvent): void => {
             const size = 1 + Math.round(Math.random() * 10) / 100;
             const angle = Math.round(Math.random() * 20 - 10);
-            const result = 'rotate(' + angle + 'deg) scale(' + size + ',' + size + ')';
-            _divEl.style.transform = result;
-            _divEl.style.webkitTransform = result;
+            const result = `rotate(${angle}deg) scale(${size},${size})`;
+
+            const el = ev.target as HTMLElement;
+            el.style.transform = result;
+            el.style.webkitTransform = result;
         };
-        _divEl.onmouseout = function(ev) {
-            const size = .9 + Math.round(Math.random() * 10) / 100;
+        _divEl.onmouseout = (ev: MouseEvent): void => {
+            const size = 0.9 + Math.round(Math.random() * 10) / 100;
             const angle = Math.round(Math.random() * 6 - 3);
-            const result = 'rotate(' + angle + 'deg) scale(' + size + ',' + size + ')';
-            _divEl.style.transform = result;  
-            _divEl.style.webkitTransform = result;
+            const result = `rotate(${angle}deg) scale(${size},${size})`;
+
+            const el = ev.target as HTMLElement;
+            el.style.transform = result;
+            el.style.webkitTransform = result;
         };
 
         // Append our container DIV to the page.
         const bodyEl = document.getElementsByTagName('body')[0];
         bodyEl.appendChild(_divEl);
-        _divEl.appendChild(_imgEl);   
+        _divEl.appendChild(_imgEl);
     }
 
-    public burst(count: number = 50): void {
-        for (let i = 0; i < count; i++) {
+    public burst(count = 50): void {
+        for (let i = 0; i < count; i += 1) {
             this.add();
         }
 
-        setTimeout(this.clear, 10000);
+        setTimeout(() => {
+            HedgeHogifyComponent.clear();
+        }, 10000);
     }
 
-    public clear(): void {
-        let elements = document.querySelectorAll('.hedgehogify-image');
+    public static clear(): void {
+        const elements = document.querySelectorAll('.hedgehogify-image');
 
-        elements.forEach(el => el.remove());
+        elements.forEach((el) => el.remove());
     }
 }
+
+export default {
+    HedgeHogifyComponent
+};
