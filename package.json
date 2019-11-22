@@ -17,6 +17,7 @@
         "@types/node": "^12.12.5",
         "@typescript-eslint/eslint-plugin": "2.7.0",
         "@typescript-eslint/parser": "2.7.0",
+        "acorn": "^7.1.0",
         "chai": "^4.2.0",
         "commitizen": "^4.0.3",
         "css-loader": "^3.2.0",
@@ -48,11 +49,6 @@
         "webpack": "^4.41.2",
         "webpack-cli": "^3.3.10",
         "webpack-dev-server": "^3.9.0"
-    },
-    "engines": {
-        "node": "^10.13.0",
-        "npm": "^5.6.0",
-        "yarn": "^1.9.4"
     },
     "licenses": [
         {
