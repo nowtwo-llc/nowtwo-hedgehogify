@@ -1,0 +1,13 @@
+# System
+node_modules/
+node
+
+# Folders
+dist/
+docs/
+tests/
+public/
+
+# Files
+karma.conf.js
+webpack.config.js

@@ -4,7 +4,7 @@ const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 module.exports = {
-    entry: './src/ts/HedgeHogify.ts',
+    entry: './src/HedgeHogify.ts',
     output: {
         library: 'HedgeHogify',
         libraryTarget: 'umd',
