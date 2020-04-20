@@ -1,5 +1,8 @@
 const path = require('path');
 
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
+
 module.exports = {
     type: 'web-module',
     npm: {
@@ -21,8 +24,8 @@ module.exports = {
             reporters: ['progress'],
             singleRun: true,
             files: [
-                'dist/HedgeHogify.css',
-                'dist/HedgeHogify.js',
+                // 'dist/hedgehogify.css',
+                'dist/hedgehogify.js',
                 {
                     included: false,
                     nocache: true,
@@ -47,15 +50,32 @@ module.exports = {
             };
 
             config.mode = isDev ? 'development' : 'production';
-            config.entry = ['./src/HedgeHogify.css', './src/HedgeHogify.ts'];
+            config.entry = [
+                // './src/HedgeHogify.css', 
+                './src/HedgeHogify.ts'
+            ];
             config.optimization = {
                 noEmitOnErrors: false
             };
+            // config.optimization = {
+            //     noEmitOnErrors: false,
+            //     minimize: true,
+            //     minimizer: [
+            //         new TerserJSPlugin({}),
+            //         new OptimizeCSSAssetsPlugin({
+            //             cssProcessorOptions: {
+            //                 discardComments: {
+            //                     removeAll: true
+            //                 }
+            //             }
+            //         })
+            //     ]
+            // };
 
             // Change output name
             config.output = {
                 ...config.output,
-                filename: 'HedgeHogify.js',
+                filename: 'hedgehogify.js',
                 library: 'HedgeHogify'
             };
 
