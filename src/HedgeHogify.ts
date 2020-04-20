@@ -41,6 +41,9 @@ export default class HedgeHogify {
     }
 
     public burst(count = 50): void {
+        const startEvent = new Event('he:hedgehogify:start');
+        document.dispatchEvent(startEvent);
+
         for (let i = 0; i < count; i += 1) {
             this.add();
         }
@@ -136,8 +139,10 @@ export default class HedgeHogify {
     }
 
     public static clear(): void {
-        const elements = document.querySelectorAll('.hedgehogify-image');
+        const stopEvent = new Event('he:hedgehogify:stop');
+        document.dispatchEvent(stopEvent);
 
+        const elements = document.querySelectorAll('.hedgehogify-image');
         elements.forEach((el) => el.remove());
     }
 }
