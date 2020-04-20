@@ -1,6 +1,4 @@
-import './HedgeHogify.css';
-
-export class HedgeHogifyComponent {
+export default class HedgeHogify {
     private _hedgeHogifyCount = 0;
     private _hedgeHogifyUrl = 'https://classifylearning.com/hedgehogify/';
     private _windowHeight = 768;
@@ -10,8 +8,24 @@ export class HedgeHogifyComponent {
     private _width = 0;
     private _input = '';
 
+    private _showSteve = true;
+    private _showMonsters = true;
+
+    constructor(config: any) {
+        if (config && config.disableSteve) {
+            this._showSteve = false;
+        }
+        if (config && config.disableMonsters) {
+            this._showMonsters = false;
+        }
+    }
+
     public konami(callback: Function): void {
         this._input = '';
+
+        // Hard coded Konami code.
+        // Up, up, down, down, left, right, left, right, a, b
+        // @TODO: Convert the old Konami code repo to a plugable repo.
         const key = '38384040373937396665';
 
         document.addEventListener('keydown', (ev): Function | null => {
@@ -32,7 +46,7 @@ export class HedgeHogifyComponent {
         }
 
         setTimeout(() => {
-            HedgeHogifyComponent.clear();
+            HedgeHogify.clear();
         }, 10000);
     }
 
@@ -83,13 +97,16 @@ export class HedgeHogifyComponent {
         const _imgEl = document.createElement('img');
         const currentTime = new Date();
         // This is our cache buster to make a new request for our hedgehog.
-        let submitTime = currentTime.getTime();
+        const submitTime = currentTime.getTime() + Math.random();
 
-        if (this._hedgeHogifyCount === 15) {
-            submitTime = 0;
-        }
         // Construct the actual request to load a random hedgehog.
-        const requestUrl = `${this._hedgeHogifyUrl}randomize.php?r=${submitTime}&url=${document.location.href}`;
+        let requestUrl = `${this._hedgeHogifyUrl}randomize.php?r=${submitTime}&url=${document.location.href}`;
+        if (!this._showSteve) {
+            requestUrl += '&disable_steve=1';
+        }
+        if (!this._showMonsters) {
+            requestUrl += '&disable_monsters=1';
+        }
         _imgEl.setAttribute('src', requestUrl);
         _imgEl.style.width = `${Math.floor(Math.random() * (350 - 100)) + 100}px`;
 
@@ -118,13 +135,9 @@ export class HedgeHogifyComponent {
         _divEl.appendChild(_imgEl);
     }
 
-    private static clear(): void {
+    public static clear(): void {
         const elements = document.querySelectorAll('.hedgehogify-image');
 
         elements.forEach((el) => el.remove());
     }
 }
-
-export default {
-    HedgeHogifyComponent
-};

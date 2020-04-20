@@ -1,7 +1,12 @@
-# System files
-.DS_Store
-
 # Dependency directories
-node_modules/
-umd/
+build/
 lib/
+node_modules/
+
+# ESLint
+.eslintcache
+eslint-report.html
+
+# Logs
+logs
+*.log

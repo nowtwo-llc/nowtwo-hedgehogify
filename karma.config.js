@@ -2,11 +2,11 @@ module.exports = (config) => {
     config.set({
         frameworks: ['mocha', 'chai'],
         files: [
-            'dist/HedgeHogify.css',
-            'dist/HedgeHogify.js',
+            'dist/hedgehogify.css',
+            'dist/hedgehogify.js',
             'tests/unit/**/*.spec.js',
             {
-                pattern: 'tests/files/**/*',
+                pattern: 'tests/**/*',
                 watched: false,
                 included: false,
                 served: true,
