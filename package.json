@@ -1,14 +1,16 @@
 {
     "author": "Classify Learning",
+    "engines": {
+        "npm": "Use Yarn instead",
+        "yarn": "^1.22.0"
+    },
+    "name": "@classifylearning/hedgehogify",
     "description": "The best way to get hedgehogs to explode all over a website.",
+    "repository": "git@github.com:classifylearning/hedgehogify.git",
     "main": "src/HedgeHogify.ts",
-    "name": "hedgehogify",
     "license": "MIT",
-    "version": "1.0.1",
-    "private": false,
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/classifylearning/hedgehogify"
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com/"
     },
     "scripts": {
         "build": "nwb build-web-module --copy-files && ./scripts/cleanout.sh",
@@ -20,6 +22,7 @@
         "test:unit": "nwb test",
         "test": "yarn run clean && yarn run build && yarn run test:unit"
     },
+    "version": "1.0.1",
     "files": [
         "build/",
         "dist/"
