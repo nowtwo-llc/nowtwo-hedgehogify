@@ -1,23 +1,33 @@
+const fs = require('fs');
 const path = require('path');
+const webpack = require('webpack');
 
-const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserJSPlugin = require('terser-webpack-plugin');
-const WebpackShellPluginNext = require('webpack-shell-plugin-next');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const { CachedInputFileSystem, ResolverFactory } = require('enhanced-resolve');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
-const BUILD_DIR = process.env.BUILD_DIR ? path.resolve(process.env.BUILD_DIR) : path.resolve(__dirname, './dist');
-const ENVIRONMENT = process.env.NODE_ENV;
+const ENVIRONMENT = process.env.NODE_ENV ? process.env.NODE_ENV : 'development';
+const ENVIRONMENT_VARS = {
+    development: require('./env.development.json'),
+    production: require('./env.production.json')
+};
+const BUILD_DIR = process.env.BUILD_DIR ? path.resolve(process.env.BUILD_DIR) : path.resolve(__dirname, './build');
+
+const resolveAliases = {
+    env: path.resolve(__dirname, `./env.${ENVIRONMENT}.json`)
+};
 
 module.exports = {
     entry: './src/HedgeHogify.ts',
     output: {
         path: BUILD_DIR,
         publicPath: BUILD_DIR,
-        library: 'Fireworksify',
         libraryTarget: 'umd',
-        filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.js' : 'hedgehogify.js',
-        umdNamedDefine: true
+        filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.js' : 'hedgehogify.js'
     },
+    mode: ENVIRONMENT,
     resolve: {
         extensions: ['.ts', '.css'],
         alias: {
@@ -26,43 +36,64 @@ module.exports = {
     },
     module: {
         rules: [
-            { test: /\.ts$/, use: 'ts-loader' },
-            { test: /\.css$/, use: [ MiniCSSExtractPlugin.loader, 'css-loader'] }
+            {
+                test: /\.ts$/,
+                use: 'ts-loader'
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader'
+                ]
+            }
         ]
     },
     plugins: [
-        new MiniCSSExtractPlugin({
-            filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.css' : 'hedgehogify.css',
+        new CleanWebpackPlugin({
+            root: BUILD_DIR,
+            verbose: true
+        }),
+        new MiniCssExtractPlugin({
+            filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.css' : 'hedgehogify.css'
         })
     ],
+    resolve: {
+        alias: resolveAliases,
+        symlinks: false
+    },
     watchOptions: {
         ignored: [
-            'dist/**', 
-            'example/**', 
+            'dist/**',
+            'example/**',
             'node_modules/**'
         ]
-    }    
+    }
 };
 
 if (ENVIRONMENT === 'development') {
-    module.exports.mode = 'development';
-    module.exports.optimization = {
-        minimizer: [
-            new TerserJSPlugin({}),
-            new OptimizeCSSAssetsPlugin({})
-        ]
-    };
+    console.log('Mode: DEVELOPMENT');
+    module.exports.devtool = 'source-map';
 } else if (ENVIRONMENT === 'production') {
-    module.exports.mode = 'production';
+    console.log('Mode: PRODUCTION');
+    module.exports.devtool = 'source-map';
+    module.exports.plugins = (module.exports.plugins || []).concat([
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: '"production"'
+            }
+        }),
+        new webpack.LoaderOptionsPlugin({
+            minimize: true
+        }),
+    ]);
     module.exports.optimization = {
-        minimize: true,
         minimizer: [
-            new TerserJSPlugin({}),
-            new OptimizeCSSAssetsPlugin({
-                cssProcessorOptions: {
-                    discardComments: {
-                        removeAll: true
-                    }
+            new TerserPlugin({
+                extractComments: false,
+                terserOptions: {
+                    sourceMap: true,
+                    ie8: false
                 }
             })
         ]
