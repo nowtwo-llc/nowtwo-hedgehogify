@@ -1,6 +1,6 @@
 export default class HedgeHogify {
     private _hedgeHogifyCount = 0;
-    private _hedgeHogifyUrl = 'https://nowtwo-llc.com/hedgehogify/';
+    private _hedgeHogifyUrl = 'https://content.nowtwo-llc.com/hedgehogify.php';
     private _windowHeight = 768;
     private _windowWidth = 1024;
     private _numType = 'px';
