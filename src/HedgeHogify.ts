@@ -1,6 +1,6 @@
-export default class HedgeHogify {
+export class HedgeHogify {
     private _hedgeHogifyCount = 0;
-    private _hedgeHogifyUrl = 'https://content.classifylearning.com/hedgehogify.php';
+    private _hedgeHogifyUrl = 'https://content.classifylearning.com/';
     private _windowHeight = 768;
     private _windowWidth = 1024;
     private _numType = 'px';
@@ -103,7 +103,7 @@ export default class HedgeHogify {
         const submitTime = currentTime.getTime() + Math.random();
 
         // Construct the actual request to load a random hedgehog.
-        let requestUrl = `${this._hedgeHogifyUrl}randomize.php?r=${submitTime}&url=${document.location.href}`;
+        let requestUrl = `${this._hedgeHogifyUrl}hedgehogify.php?r=${submitTime}&url=${document.location.href}`;
         if (!this._showSteve) {
             requestUrl += '&disable_steve=1';
         }
