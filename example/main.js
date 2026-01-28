@@ -1,19 +1,16 @@
 let hedgehogify = null;
-let running = false;
 
-document.addEventListener('he:hedgehogify:start', function() {
+document.addEventListener('he:hedgehogify:start', () => {
     console.log('start');
-    running = true;
-}, false);
-document.addEventListener('he:hedgehogify:stop', function() {
+});
+document.addEventListener('he:hedgehogify:stop', () => {
     console.log('stop');
-    running = false;
-}, false);
+});
 
-window.onload = function() {
+window.onload = () => {
     hedgehogify = new HedgeHogify();
-    hedgehogify.konami(function() { 
+    hedgehogify.konami(() => {
         console.log('Executing the Konami code...');
         hedgehogify.burst();
     });
-}
+};

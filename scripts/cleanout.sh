@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 rm -rf ./umd/main**
 
 mkdir -p ./dist

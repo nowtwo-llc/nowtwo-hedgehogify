@@ -1,7 +1,6 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "allowSyntheticDefaultImports": true,
         "declaration": true,
         "declarationMap": true,
         "esModuleInterop": true,
@@ -15,6 +14,6 @@
         "target": "es5"
     },
     "exclude": ["./node_modules"],
-    "include": ["./src", "./tests", "./example", "**.js"],
+    "include": ["./src", "./tests", "./example"],
     "typeRoots": ["./node_modules/@types", "./src"]
 }

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/robertvelton/Projects/nowtwo-llc/hedgehogify log --oneline -20)",
+      "Bash(npm run build:dev:*)",
+      "Bash(npm run build:prod:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run eslint:*)",
+      "Bash(npm ls:*)",
+      "Bash(ls:*)",
+      "Bash(npx karma start:*)",
+      "Bash(npm test:*)"
+    ]
+  }
+}

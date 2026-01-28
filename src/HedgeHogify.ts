@@ -1,3 +1,42 @@
+/** Konami code key sequence: Up, Up, Down, Down, Left, Right, Left, Right, B, A */
+const KONAMI_CODE = '38384040373937396665';
+
+/** Duration in milliseconds before hedgehog elements are cleared from the page. */
+const BURST_DURATION_MS = 10000;
+
+/** Default number of hedgehog elements created by {@link HedgeHogify.burst}. */
+const DEFAULT_BURST_COUNT = 50;
+
+/** After this many hedgehogs have been added, the next one is a large centered hedgehog. */
+const LARGE_HEDGEHOG_THRESHOLD = 15;
+
+/** Pixel size used for the large centered hedgehog. */
+const LARGE_HEDGEHOG_SIZE = 530;
+
+/** Minimum random image width in pixels. */
+const MIN_IMAGE_WIDTH = 100;
+
+/** Maximum random image width in pixels. */
+const MAX_IMAGE_WIDTH = 350;
+
+/** Maximum fraction of the viewport height used for random vertical positioning. */
+const MAX_HEIGHT_RATIO = 0.75;
+
+/** Configuration options for HedgeHogify. */
+interface HedgeHogifyConfig {
+    /** When true, disables Steve character images. */
+    disableSteve?: boolean;
+    /** When true, disables monster character images. */
+    disableMonsters?: boolean;
+}
+
+/**
+ * A lightweight library that makes animated hedgehog characters burst across websites.
+ *
+ * Creates fixed-position hedgehog image overlays on the page with random positioning,
+ * sizing, and mouse interaction animations. Supports Konami code activation and
+ * configurable character filtering.
+ */
 export class HedgeHogify {
     private _hedgeHogifyCount = 0;
     private _hedgeHogifyUrl = 'https://content.nowtwo-llc.com/';
@@ -11,7 +50,7 @@ export class HedgeHogify {
     private _showSteve = true;
     private _showMonsters = true;
 
-    constructor(config: any) {
+    constructor(config?: HedgeHogifyConfig) {
         if (config && config.disableSteve) {
             this._showSteve = false;
         }
@@ -20,27 +59,37 @@ export class HedgeHogify {
         }
     }
 
-    public konami(callback: Function): void {
+    /**
+     * Listens for the Konami code key sequence and triggers the provided callback.
+     *
+     * The Konami code is: Up, Up, Down, Down, Left, Right, Left, Right, B, A.
+     *
+     * @param callback - Function to invoke when the full Konami code sequence is entered.
+     */
+    public konami(callback: () => void): void {
         this._input = '';
 
-        // Hard coded Konami code.
-        // Up, up, down, down, left, right, left, right, a, b
-        // @TODO: Convert the old Konami code repo to a plugable repo.
-        const key = '38384040373937396665';
-
-        document.addEventListener('keydown', (ev): Function | null => {
+        document.addEventListener('keydown', (ev): void => {
             this._input += `${ev.keyCode}`;
-            if (this._input === key) {
-                return callback();
+            if (this._input === KONAMI_CODE) {
+                callback();
+                return;
             }
-            if (key.indexOf(this._input)) {
+            if (KONAMI_CODE.indexOf(this._input) !== 0) {
                 this._input = `${ev.keyCode}`;
             }
-            return null;
         });
     }
 
-    public burst(count = 50): void {
+    /**
+     * Creates hedgehog image elements as fixed-position overlays on the page.
+     * Elements are automatically cleared after {@link BURST_DURATION_MS} milliseconds.
+     *
+     * Dispatches `he:hedgehogify:start` on `document` when the burst begins.
+     *
+     * @param count - Number of hedgehog elements to create (default {@link DEFAULT_BURST_COUNT}).
+     */
+    public burst(count = DEFAULT_BURST_COUNT): void {
         const startEvent = new Event('he:hedgehogify:start');
         document.dispatchEvent(startEvent);
 
@@ -50,18 +99,22 @@ export class HedgeHogify {
 
         setTimeout(() => {
             HedgeHogify.clear();
-        }, 10000);
+        }, BURST_DURATION_MS);
     }
 
+    /**
+     * Creates an individual hedgehog DOM element with random positioning, sizing,
+     * and mouse interaction animations (scale/rotate on hover).
+     */
     private add(): void {
         this._hedgeHogifyCount += 1;
 
         // Create a container DIV for our hedgehog.
-        const _divEl = document.createElement('div');
-        _divEl.style.position = 'fixed';
+        const divEl = document.createElement('div');
+        divEl.style.position = 'fixed';
 
         // Prepare our lovely variables.
-        const heightRandom = Math.random() * 0.75;
+        const heightRandom = Math.random() * MAX_HEIGHT_RATIO;
         const documentEl = document.documentElement;
 
         if (typeof window.innerHeight === 'number') {
@@ -75,29 +128,25 @@ export class HedgeHogify {
             this._height = Math.round(this._height * 100);
         }
         // Setting the DIV element properties.
-        _divEl.className = 'hedgehogify-image';
-        _divEl.style.zIndex = String(10);
-        _divEl.style.outline = String(0);
-        _divEl.style.webkitTransition = 'all .1s linear';
-        _divEl.style.webkitTransform = 'rotate(1deg) scale(1.01,1.01)';
-        _divEl.style.transition = 'all .1s linear';
+        divEl.className = 'hedgehogify-image';
+        divEl.style.zIndex = String(10);
+        divEl.style.outline = String(0);
+        divEl.style.transition = 'all .1s linear';
 
         // Clicking 15 times summons a large hedgehog centered on the screen.
-        // Super exciting...
-        if (this._hedgeHogifyCount === 15) {
-            _divEl.style.top = `${Math.max(0, Math.round((this._windowHeight - 530) / 2))}px`;
-            _divEl.style.left = `${Math.round((this._windowWidth - 530) / 2)}px`;
-            _divEl.style.zIndex = String(1000);
-            // Otherwise we randomize the position of our hedgehog.
+        if (this._hedgeHogifyCount === LARGE_HEDGEHOG_THRESHOLD) {
+            divEl.style.top = `${Math.max(0, Math.round((this._windowHeight - LARGE_HEDGEHOG_SIZE) / 2))}px`;
+            divEl.style.left = `${Math.round((this._windowWidth - LARGE_HEDGEHOG_SIZE) / 2)}px`;
+            divEl.style.zIndex = String(1000);
         } else {
             if (this._numType === 'px') {
-                _divEl.style.top = String(Math.round(this._windowHeight * heightRandom)) + this._numType;
+                divEl.style.top = String(Math.round(this._windowHeight * heightRandom)) + this._numType;
             } else {
-                _divEl.style.top = String(this._height) + this._numType;
+                divEl.style.top = String(this._height) + this._numType;
             }
-            _divEl.style.left = `${Math.round(Math.random() * 90)}%`;
+            divEl.style.left = `${Math.round(Math.random() * 90)}%`;
         }
-        const _imgEl = document.createElement('img');
+        const imgEl = document.createElement('img');
         const currentTime = new Date();
         // This is our cache buster to make a new request for our hedgehog.
         const submitTime = currentTime.getTime() + Math.random();
@@ -110,34 +159,37 @@ export class HedgeHogify {
         if (!this._showMonsters) {
             requestUrl += '&disable_monsters=1';
         }
-        _imgEl.setAttribute('src', requestUrl);
-        _imgEl.style.width = `${Math.floor(Math.random() * (350 - 100)) + 100}px`;
+        imgEl.setAttribute('src', requestUrl);
+        imgEl.setAttribute('alt', 'Hedgehog');
+        imgEl.style.width = `${Math.floor(Math.random() * (MAX_IMAGE_WIDTH - MIN_IMAGE_WIDTH)) + MIN_IMAGE_WIDTH}px`;
 
-        _divEl.onmouseover = (ev: MouseEvent): void => {
+        divEl.onmouseover = (ev: MouseEvent): void => {
             const size = 1 + Math.round(Math.random() * 10) / 100;
             const angle = Math.round(Math.random() * 20 - 10);
             const result = `rotate(${angle}deg) scale(${size},${size})`;
 
             const el = ev.target as HTMLElement;
             el.style.transform = result;
-            el.style.webkitTransform = result;
         };
-        _divEl.onmouseout = (ev: MouseEvent): void => {
+        divEl.onmouseout = (ev: MouseEvent): void => {
             const size = 0.9 + Math.round(Math.random() * 10) / 100;
             const angle = Math.round(Math.random() * 6 - 3);
             const result = `rotate(${angle}deg) scale(${size},${size})`;
 
             const el = ev.target as HTMLElement;
             el.style.transform = result;
-            el.style.webkitTransform = result;
         };
 
         // Append our container DIV to the page.
-        const bodyEl = document.getElementsByTagName('body')[0];
-        bodyEl.appendChild(_divEl);
-        _divEl.appendChild(_imgEl);
+        document.body.appendChild(divEl);
+        divEl.appendChild(imgEl);
     }
 
+    /**
+     * Removes all `.hedgehogify-image` elements from the DOM.
+     *
+     * Dispatches `he:hedgehogify:stop` on `document` when clearing.
+     */
     public static clear(): void {
         const stopEvent = new Event('he:hedgehogify:stop');
         document.dispatchEvent(stopEvent);
