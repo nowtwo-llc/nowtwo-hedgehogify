@@ -2,8 +2,7 @@ module.exports = (config) => {
     config.set({
         frameworks: ['mocha', 'chai'],
         files: [
-            'dist/hedgehogify.css',
-            'dist/hedgehogify.js',
+            'build/hedgehogify.js',
             'tests/unit/**/*.spec.js',
             {
                 pattern: 'tests/**/*',
@@ -20,6 +19,7 @@ module.exports = (config) => {
         colors: true,
         logLevel: config.LOG_INFO,
         browsers: ['ChromeHeadless'],
-        autoWatch: false
+        autoWatch: false,
+        singleRun: true
     })
 }
