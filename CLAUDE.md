@@ -8,8 +8,9 @@ Hedgehogify (`@nowtwo-llc/hedgehogify`) is a lightweight, dependency-free TypeSc
 that makes animated hedgehog characters burst across websites. It ships as UMD + ESM + CJS
 and is published to GitHub Packages under the `nowtwo-llc` org.
 
-Owned by **NowTwo LLC**. The package was previously `@classifylearning/hedgehogify` under
-the Classify Learning / FreePro LLC branding; that name is retired.
+Owned by **NowTwo LLC**. All naming, metadata, copyright and documentation must stay under
+NowTwo LLC and the `@nowtwo-llc` scope; do not reintroduce references to prior owners of
+this code, including in historical notes.
 
 ## Commands
 
@@ -52,8 +53,10 @@ Custom events `he:hedgehogify:start` and `he:hedgehogify:stop` are dispatched on
 ### Images
 
 Images are **local files in `assets/`**, bundled into the published package. There is no
-backend. Prior versions fetched every image from `content.classifylearning.com/hedgehogify.php`,
-passing along the host page URL; that host is dead and the phone-home is gone.
+backend. Prior versions fetched every image from a remote image service, passing along the
+host page URL; that host is dead and the phone-home is gone. Do not reintroduce a remote
+image dependency — the point of vendoring the assets is that the library works offline and
+depends on no host staying up.
 
 `src/assets.generated.ts` is generated from `assets/` by `scripts/generate-assets.mjs` —
 **never edit it by hand**. The filename prefix (`hedgie-`, `steve-`, `monster-`) determines
@@ -93,6 +96,13 @@ declarations — so it can cover `src`, `tests`, and `example` for the editor, t
 type-aware lint rules.
 
 ## Versions & Constraints
+
+- **Development requires Node 22+.** jsdom 30 declares
+  `^22.22.2 || ^24.15.0 || >=26.0.0` and dies on Node 20 with
+  `TypeError: webidl.util.markAsUncloneable is not a function` (undici calling a Node API
+  that does not exist there) — it fails before any test runs. The CI matrix is 22.x/24.x for
+  this reason. `engines.node` stays at `>=20` on purpose: that describes consumers, and the
+  published package is browser code that never executes in Node.
 
 - **TypeScript is pinned to 6.x.** `typescript-eslint` peers `typescript <6.1.0`, so TS 7 is
   blocked until that lifts. Unlike `nt-fireworksify`, this repo already dropped `target: es5`

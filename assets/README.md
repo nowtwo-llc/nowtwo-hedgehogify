@@ -30,9 +30,9 @@ files without a separate step.
 
 29 images: 20 Hedgie, 6 Steve, 3 monster. Roughly 1000px on the long edge, ~1.4 MB total.
 
-These were recovered from `files.classifylearning.com/images/characters/` (CloudFront in
-front of S3) after the old `content.classifylearning.com` image service went offline. They
-are now versioned here, so the library no longer depends on any host staying up.
+These were recovered from the legacy CloudFront/S3 image host after that service went
+offline. They are now versioned here, so the library no longer depends on any host staying
+up.
 
 The library renders images at 100–350px wide, and 530px for the large centered one, so
 ~1000px is about right for a 2× display. There is no need for larger source art.

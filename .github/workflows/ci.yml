@@ -16,7 +16,15 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [20.x, 22.x, 24.x]
+                # Node 20 is excluded deliberately: jsdom 30 requires
+                # ^22.22.2 || ^24.15.0 || >=26.0.0 and crashes on 20.x with
+                # "webidl.util.markAsUncloneable is not a function". Node 20 also
+                # reached end-of-life in April 2026.
+                #
+                # This is a development-toolchain floor only. The published package
+                # is browser code and never executes in Node, so `engines` stays
+                # permissive for consumers.
+                node-version: [22.x, 24.x]
 
         steps:
             - uses: actions/checkout@v5
