@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="200" height="160" role="img" aria-label="Placeholder monster">
+    <path d="M100 16 C150 16 176 56 176 96 C176 130 146 148 100 148 C54 148 24 130 24 96 C24 56 50 16 100 16 Z" fill="#6f4bb5" />
+    <g stroke="#4d3080" stroke-width="8" stroke-linecap="round">
+        <path d="M62 26 L54 2" /><path d="M138 26 L146 2" />
+    </g>
+    <circle cx="76" cy="82" r="14" fill="#fff" /><circle cx="79" cy="84" r="7" fill="#2b2b2b" />
+    <circle cx="126" cy="82" r="14" fill="#fff" /><circle cx="123" cy="84" r="7" fill="#2b2b2b" />
+    <path d="M70 116 Q100 138 130 116" stroke="#2b2b2b" stroke-width="6" fill="none" stroke-linecap="round" />
+    <text x="100" y="156" font-family="monospace" font-size="13" text-anchor="middle" fill="#4d3080">PLACEHOLDER</text>
+</svg>

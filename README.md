@@ -1,55 +1,166 @@
-# HedgeHogify
+# Hedgehogify
 
-We have a pretty interesting mix of characters that we use throughout our app. Our main character is Hedgie the hedgehog. We have created a lot of illustrations of hedgie over the years and want a fun way to share that with the world!
+[![CI](https://github.com/nowtwo-llc/nowtwo-hedgehogify/actions/workflows/ci.yml/badge.svg)](https://github.com/nowtwo-llc/nowtwo-hedgehogify/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-We created HedgehHogify to allow website developers and app creators to have Hegdie pop up all over the screen and add some joy to the world. This is a pretty lightweight library. The total size for this function is **~1.5k**.
+The best way to get hedgehogs to explode all over a website.
 
-Check out a [hedgehogify demo](https://nowtwo-llc.github.io/hedgehogify.html)!
+Hedgie the hedgehog and friends burst across the page, hang around for ten seconds, and
+clean up after themselves. It is a tiny, dependency-free TypeScript library — the minified
+UMD bundle is about 4 KB.
 
-## Installing
+**[Try the demo →](https://nowtwo-llc.github.io/nowtwo-hedgehogify/)**
 
-Installation is pretty simple. Download the latest release and upload the CSS and JS files to your webserver. You will need to change the [PATH] variables to reflect where you uploaded the files.
+## Install
+
+This package is published to GitHub Packages. Point the `@nowtwo-llc` scope at the GitHub
+registry, in a `.npmrc` next to your `package.json`:
+
+```
+@nowtwo-llc:registry=https://npm.pkg.github.com
+```
+
+GitHub Packages requires authentication for every install, including public packages, so
+you will also need a personal access token with `read:packages`:
+
+```
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+Then:
+
+```bash
+npm install @nowtwo-llc/hedgehogify
+```
+
+### Script tag
+
+No build step, no auth — grab the UMD bundle and go. It exposes `HedgeHogify` as a global
+and finds its images automatically, relative to the script's own URL.
 
 ```html
-<script src="[JS_FILE_PATH]/hedgehogify.js"></script>
+<script src="https://nowtwo-llc.github.io/nowtwo-hedgehogify/dist/hedgehogify.min.js"></script>
+<script>
+    new HedgeHogify().burst();
+</script>
 ```
 
 ## Usage
 
-We have a couple of ways to implement this within your app. The most common way would be to instantiate the object and pass in a configuration value. Check out the example below:
+```javascript
+import { HedgeHogify } from '@nowtwo-llc/hedgehogify';
+
+const hedgehogify = new HedgeHogify();
+hedgehogify.burst();
+```
+
+A burst drops 50 hedgehogs on the page and clears them after ten seconds.
+
+### Bundlers need an image URL
+
+The images ship as real files in the package rather than being inlined, which keeps the
+bundle small. When you load the library through a bundler there is no script tag to resolve
+them against, so tell it where they are served from:
 
 ```javascript
-window.onload = function() {
-    let hedgehogify = new HedgeHogify();
-    hedgehogify.burst();
-};
+const hedgehogify = new HedgeHogify({
+    imageBaseUrl: '/static/hedgehogify/'
+});
 ```
-The above example will run a burst of Hedgies on page load and will run for 10 seconds. After 10 seconds, all the Hedgies will disappear and your site/app will return to normal.
 
-## Settings
+Copy `node_modules/@nowtwo-llc/hedgehogify/assets/` to that path as part of your build. If
+you skip this, the library falls back to loading images from the GitHub Pages deployment.
 
-Variable | Type | Description
---- | --- | ---
-disableSteve | *boolean* | If set to true, Hedgie's friend Steve(the dog) will be removed from the images available to be selected. (**Default: false**)
-disableMonsters | *boolean* | If set to true, the evil monsters who torment Hedgie will be removed from the images available to be selected. (**Default: false**)
+### Konami code
 
-## Events
-Name | Description
---- | ---
-he:hedgehogify:start | Fired when a timed burst run is started through an instantiated hedgehogify object.
-he:hedgehogify:stop | Fired when a timed burst run is stopped through an instantiated hedgehogify object.
+```javascript
+const hedgehogify = new HedgeHogify();
 
-*Note - All events are fired/triggered on the document.*
+hedgehogify.konami(() => {
+    hedgehogify.burst();
+});
+```
 
-## Authors
+Fires on ↑ ↑ ↓ ↓ ← → ← → B A. Call `destroy()` to remove the listener.
 
-* **nowtwo-llc** - [nowtwo-llc.com](https://nowtwo-llc.com/)
+## API
+
+### `new HedgeHogify(config?)`
+
+| Option            | Type      | Default          | Description                                              |
+| ----------------- | --------- | ---------------- | -------------------------------------------------------- |
+| `disableSteve`    | `boolean` | `false`          | Removes Steve (the dog) from the pool of images.          |
+| `disableMonsters` | `boolean` | `false`          | Removes the monsters that torment Hedgie.                 |
+| `imageBaseUrl`    | `string`  | auto-detected    | Where the images are served from. A trailing slash is added if missing. |
+| `duration`        | `number`  | `10000`          | Milliseconds before a burst clears itself.                |
+
+Character filtering is applied when the instance is constructed, so change a flag by
+creating a new instance.
+
+### Methods
+
+| Method              | Description                                                              |
+| ------------------- | ------------------------------------------------------------------------ |
+| `burst(count?)`     | Adds `count` hedgehogs (default `50`) and clears them after `duration`.   |
+| `konami(callback)`  | Runs `callback` when the Konami code is entered. Replaces any prior listener. |
+| `destroy()`         | Removes the Konami listener.                                              |
+| `HedgeHogify.clear()` | Static. Removes every hedgehog currently on the page.                   |
+
+### Properties
+
+| Property        | Description                                             |
+| --------------- | ------------------------------------------------------- |
+| `imageBaseUrl`  | The resolved base URL images are loaded from.            |
+| `assets`        | The images available to this instance, after filtering.  |
+
+### Events
+
+Both are dispatched on `document`.
+
+| Name                   | Description                          |
+| ---------------------- | ------------------------------------ |
+| `he:hedgehogify:start` | A burst has started.                 |
+| `he:hedgehogify:stop`  | Hedgehogs are being cleared.         |
+
+## Artwork
+
+Images live in [`assets/`](./assets) and are bundled into the published package. The
+filename prefix decides which character an image is, which is what makes `disableSteve` and
+`disableMonsters` work without a server:
+
+| Prefix     | Character | Disabled by       |
+| ---------- | --------- | ----------------- |
+| `hedgie-`  | Hedgie    | never             |
+| `steve-`   | Steve     | `disableSteve`    |
+| `monster-` | Monster   | `disableMonsters` |
+
+Drop new files in and run `npm run assets` to regenerate the manifest. See
+[`assets/README.md`](./assets/README.md) for details.
+
+## Privacy
+
+Everything runs in the browser. No request is made to any backend, and no information about
+the host page leaves the visitor's machine.
+
+## Development
+
+```bash
+npm install
+npm run demo        # build, then serve the demo at http://localhost:8080
+npm test            # Vitest, jsdom
+npm run build:prod  # UMD + ESM + CJS into dist/, plus declarations
+npm run lint        # ESLint with auto-fix
+npm run typecheck   # tsc --noEmit
+```
+
+The library is one class in `src/HedgeHogify.ts`. `src/assets.generated.ts` is generated
+from `assets/` — do not edit it by hand.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT © NowTwo LLC — see [LICENSE](./LICENSE).
 
 ## Acknowledgments
 
-* [The Cornify Project](https://www.cornify.com/)
-* [Original Konami-JS Repo](https://github.com/snaptortoise/konami-js)
+- [The Cornify Project](https://www.cornify.com/)
+- [Original Konami-JS Repo](https://github.com/snaptortoise/konami-js)

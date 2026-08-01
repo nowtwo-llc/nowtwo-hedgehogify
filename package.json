@@ -1,71 +1,89 @@
 {
-    "author": "nowtwo-llc",
     "name": "@nowtwo-llc/hedgehogify",
+    "version": "3.0.0",
     "description": "The best way to get hedgehogs to explode all over a website.",
-    "repository": "git@github.com:nowtwo-llc/hedgehogify.git",
-    "main": "src/HedgeHogify.ts",
+    "author": "NowTwo LLC",
     "license": "MIT",
+    "homepage": "https://github.com/nowtwo-llc/nowtwo-hedgehogify#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nowtwo-llc/nowtwo-hedgehogify.git"
+    },
+    "bugs": {
+        "url": "https://github.com/nowtwo-llc/nowtwo-hedgehogify/issues"
+    },
+    "keywords": [
+        "hedgehog",
+        "animation",
+        "effects",
+        "browser",
+        "dom",
+        "typescript",
+        "fun",
+        "easter-egg",
+        "konami"
+    ],
+    "main": "./dist/hedgehogify.cjs",
+    "module": "./dist/hedgehogify.mjs",
+    "types": "./dist/types/HedgeHogify.d.ts",
+    "unpkg": "./dist/hedgehogify.min.js",
+    "jsdelivr": "./dist/hedgehogify.min.js",
+    "exports": {
+        ".": {
+            "types": "./dist/types/HedgeHogify.d.ts",
+            "import": "./dist/hedgehogify.mjs",
+            "require": "./dist/hedgehogify.cjs",
+            "default": "./dist/hedgehogify.mjs"
+        },
+        "./assets/*": "./assets/*",
+        "./package.json": "./package.json"
+    },
+    "sideEffects": false,
+    "files": [
+        "dist/",
+        "assets/"
+    ],
     "publishConfig": {
         "registry": "https://npm.pkg.github.com/"
     },
-    "scripts": {
-        "build:dev": "cross-env NODE_ENV=development webpack --progress",
-        "build:prod": "cross-env NODE_ENV=production BUILD_DIR=./dist/ webpack --progress",
-        "clean": "rm -rf build dist",
-        "eslint:format": "prettier-eslint --eslint-config-path '.eslintrc' --write $PWD/'src/**/*.{js,ts,jsx,tsx,vue}' $PWD/'*.{js,ts}'",
-        "eslint:report": "clear && echo 'Generating report in eslint-report.html...' && echo 'Generated file will be visible after command finishes' && eslint --fix --cache --color -o eslint-report.html -f html $PWD/'src/**/*.{js,ts,jsx,tsx,vue}'",
-        "eslint": "eslint --fix --cache --color",
-        "test:unit": "karma start karma.config.js",
-        "test": "npm run build:dev && npm run test:unit",
-        "update": "npm-check-updates -u",
-        "watch": "cross-env NODE_ENV=development webpack --progress --watch"
+    "engines": {
+        "node": ">=20"
     },
-    "version": "2.0.0",
-    "files": [
-        "build/",
-        "dist/"
-    ],
-    "dependencies": {
-        "konami": "^1.7.0"
+    "scripts": {
+        "assets": "node scripts/generate-assets.mjs",
+        "build": "npm run build:prod",
+        "build:dev": "npm run assets && cross-env NODE_ENV=development webpack --progress",
+        "build:prod": "npm run clean:dist && npm run assets && cross-env NODE_ENV=production BUILD_DIR=./dist/ webpack --progress && npm run build:types",
+        "build:types": "tsc -p tsconfig.types.json",
+        "clean": "rm -rf build dist",
+        "clean:dist": "rm -rf dist",
+        "demo": "npm run build:prod && node scripts/serve-demo.mjs",
+        "eslint": "eslint --fix --cache --color .",
+        "eslint:format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,mjs,json}\" && eslint --fix .",
+        "lint": "npm run eslint",
+        "prepublishOnly": "npm run build:prod",
+        "test": "npm run assets && vitest run",
+        "test:watch": "vitest",
+        "typecheck": "npm run assets && tsc -p tsconfig.json --noEmit",
+        "update": "npm-check-updates -u",
+        "watch": "npm run assets && cross-env NODE_ENV=development webpack --progress --watch"
     },
     "devDependencies": {
-        "@babel/core": "^7.28.0",
-        "@babel/eslint-parser": "^7.28.0",
-        "acorn": "^8.15.0",
-        "chai": "^4.5.0",
-        "clean-webpack-plugin": "^4.0.0",
-        "cross-env": "^10.0.0",
-        "css-loader": "^7.1.2",
-        "css-minimizer-webpack-plugin": "^7.0.2",
-        "dotenv": "^17.2.1",
-        "eslint": "^9.32.0",
+        "@eslint/js": "^10.0.1",
+        "cross-env": "^10.1.0",
+        "eslint": "^10.8.0",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "^5.5.3",
-        "filemanager-webpack-plugin": "^9.0.1",
-        "husky": "^9.1.7",
-        "karma": "^6.4.4",
-        "karma-chai": "^0.1.0",
-        "karma-chrome-launcher": "^3.2.0",
-        "karma-mocha": "^2.0.1",
-        "lint-staged": "^16.1.2",
-        "mini-css-extract-plugin": "^2.9.2",
-        "mocha": "^11.7.1",
-        "npm-check-updates": "^18.0.2",
-        "postcss-import": "^16.1.1",
-        "postcss-loader": "^8.1.1",
-        "postcss-preset-env": "^10.2.4",
-        "prettier": "^3.6.2",
-        "prettier-eslint": "^16.4.2",
-        "prettier-eslint-cli": "^8.0.1",
-        "sass": "^1.89.2",
-        "sass-loader": "^16.0.5",
-        "stylelint": "^16.22.0",
-        "stylelint-prettier": "^5.0.3",
-        "terser-webpack-plugin": "^5.3.14",
-        "ts-loader": "^9.5.2",
-        "typedoc": "^0.28.7",
-        "typescript": "^5.8.3",
-        "webpack": "^5.100.2",
-        "webpack-cli": "^6.0.1"
+        "eslint-plugin-prettier": "^5.5.6",
+        "globals": "^17.8.0",
+        "jsdom": "^30.0.1",
+        "npm-check-updates": "^23.0.0",
+        "prettier": "^3.9.6",
+        "terser-webpack-plugin": "^5.6.1",
+        "ts-loader": "^9.6.2",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.65.0",
+        "vitest": "^4.1.10",
+        "webpack": "^5.109.2",
+        "webpack-cli": "^7.2.2"
     }
 }

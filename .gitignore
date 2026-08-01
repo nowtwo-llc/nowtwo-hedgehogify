@@ -1,7 +1,14 @@
 # Dependency directories
-build/
-lib/
 node_modules/
+
+# Build output — produced by `npm run build`, published from CI
+build/
+dist/
+lib/
+
+# Claude Code (local, per-developer)
+.claude/settings.local.json
+.claude/*.local.json
 
 # ESLint
 .eslintcache
@@ -10,3 +17,6 @@ eslint-report.html
 # Logs
 logs
 *.log
+
+# OS
+.DS_Store

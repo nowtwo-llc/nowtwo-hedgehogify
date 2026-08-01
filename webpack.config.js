@@ -1,93 +1,112 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const ENVIRONMENT = process.env.NODE_ENV ? process.env.NODE_ENV : 'development';
-const ENVIRONMENT_VARS = {
-    development: require('./env.development.json'),
-    production: require('./env.production.json')
-};
 const BUILD_DIR = process.env.BUILD_DIR ? path.resolve(process.env.BUILD_DIR) : path.resolve(__dirname, './build');
 
-const resolveAliases = {
-    env: path.resolve(__dirname, `./env.${ENVIRONMENT}.json`)
+const resolve = {
+    extensions: ['.ts'],
+    alias: {
+        '~': path.resolve('./node_modules')
+    },
+    symlinks: false
 };
 
-module.exports = {
-    entry: './src/HedgeHogify.ts',
-    output: {
-        path: BUILD_DIR,
-        publicPath: BUILD_DIR,
-        libraryTarget: 'umd',
-        filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.js' : 'hedgehogify.js'
-    },
-    mode: ENVIRONMENT,
-    resolve: {
-        extensions: ['.ts', '.js', '.css'],
-        alias: {
-            ...resolveAliases,
-            '~': path.resolve('./node_modules')
-        },
-        symlinks: false
-    },
-    module: {
-        rules: [
-            {
-                test: /\.ts$/,
-                use: 'ts-loader'
-            },
-            {
-                test: /\.css$/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader'
-                ]
+// Declarations are emitted once by `npm run build:types`. Without this the three
+// production compilers would each race to write the same .d.ts files.
+const tsRule = {
+    test: /\.ts$/,
+    use: {
+        loader: 'ts-loader',
+        options: {
+            compilerOptions: {
+                declaration: false,
+                declarationMap: false
             }
-        ]
-    },
-    plugins: [
-        new CleanWebpackPlugin({
-            root: BUILD_DIR,
-            verbose: true
-        }),
-        new MiniCssExtractPlugin({
-            filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.css' : 'hedgehogify.css'
-        })
-    ],
-    watchOptions: {
-        ignored: [
-            'dist/**',
-            'example/**',
-            'node_modules/**'
-        ]
+        }
     }
 };
 
-if (ENVIRONMENT === 'development') {
-    console.log('Mode: DEVELOPMENT');
-    module.exports.devtool = 'source-map';
-} else if (ENVIRONMENT === 'production') {
+const baseConfig = {
+    entry: './src/HedgeHogify.ts',
+    mode: ENVIRONMENT,
+    devtool: 'source-map',
+    resolve,
+    module: { rules: [tsRule] },
+    watchOptions: {
+        ignored: ['dist/**', 'example/**', 'node_modules/**']
+    }
+};
+
+const productionPlugins = () => [
+    new webpack.DefinePlugin({
+        'process.env': { NODE_ENV: '"production"' }
+    })
+];
+
+/**
+ * UMD bundle — the <script src> / unpkg / jsDelivr entry point. Exposes
+ * `HedgeHogify` as a browser global and is what the demo page loads.
+ */
+const umdConfig = {
+    ...baseConfig,
+    name: 'umd',
+    target: ['web', 'es2018'],
+    output: {
+        path: BUILD_DIR,
+        libraryTarget: 'umd',
+        globalObject: 'this',
+        filename: ENVIRONMENT === 'production' ? 'hedgehogify.min.js' : 'hedgehogify.js'
+    },
+    plugins: ENVIRONMENT === 'production' ? productionPlugins() : [],
+    optimization:
+        ENVIRONMENT === 'production'
+            ? { minimize: true, minimizer: [new TerserPlugin({ extractComments: false })] }
+            : { minimize: false }
+};
+
+/**
+ * ESM bundle — what bundlers resolve via the "import" condition. Left
+ * unminified so downstream tooling can tree-shake and minify it in context.
+ */
+const esmConfig = {
+    ...baseConfig,
+    name: 'esm',
+    target: ['web', 'es2018'],
+    experiments: { outputModule: true },
+    output: {
+        path: BUILD_DIR,
+        filename: 'hedgehogify.mjs',
+        library: { type: 'module' },
+        environment: { module: true, dynamicImport: true }
+    },
+    plugins: productionPlugins(),
+    optimization: { minimize: false }
+};
+
+/**
+ * CommonJS bundle — the "require" condition, for Node-based consumers and
+ * older bundler setups.
+ */
+const cjsConfig = {
+    ...baseConfig,
+    name: 'cjs',
+    target: ['web', 'es2018'],
+    output: {
+        path: BUILD_DIR,
+        filename: 'hedgehogify.cjs',
+        library: { type: 'commonjs2' }
+    },
+    plugins: productionPlugins(),
+    optimization: { minimize: false }
+};
+
+if (ENVIRONMENT === 'production') {
     console.log('Mode: PRODUCTION');
-    module.exports.devtool = 'source-map';
-    module.exports.plugins = (module.exports.plugins || []).concat([
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: '"production"'
-            }
-        }),
-    ]);
-    module.exports.optimization = {
-        minimizer: [
-            new TerserPlugin({
-                extractComments: false,
-                terserOptions: {
-                    sourceMap: true,
-                    ie8: false
-                }
-            })
-        ]
-    };
+    module.exports = [umdConfig, esmConfig, cjsConfig];
+} else {
+    console.log('Mode: DEVELOPMENT');
+    module.exports = umdConfig;
 }

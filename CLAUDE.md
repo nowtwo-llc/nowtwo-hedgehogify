@@ -4,42 +4,116 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Hedgehogify (`@nowtwo-llc/hedgehogify`) is a lightweight (~1.5k) TypeScript library that makes animated hedgehog characters burst across websites. It's published to GitHub Package Registry as a UMD bundle.
+Hedgehogify (`@nowtwo-llc/hedgehogify`) is a lightweight, dependency-free TypeScript library
+that makes animated hedgehog characters burst across websites. It ships as UMD + ESM + CJS
+and is published to GitHub Packages under the `nowtwo-llc` org.
 
-## Build & Development Commands
+Owned by **NowTwo LLC**. The package was previously `@nowtwo-llc/hedgehogify` under
+the nowtwo-llc / nowtwo LLC branding; that name is retired.
 
-- `npm run build:dev` — Development build to `build/` with source maps
-- `npm run build:prod` — Production build to `dist/` (minified)
-- `npm run watch` — Watch mode for development
-- `npm run eslint` — Lint with auto-fix (ESLint + Prettier)
-- `npm run eslint:format` — Format all source files with Prettier-ESLint
-- `npm test` — Clean, build, then run unit tests (requires `npm run build:prod` first since Karma loads from `dist/`)
-- `npm run test:unit` — Run Karma/Mocha/Chai unit tests only (uses `nwb test`)
+## Commands
 
-Tests run in ChromeHeadless via Karma. Test files live in `tests/unit/**/*.spec.js`.
+```bash
+npm run demo          # build:prod, then serve the demo at http://localhost:8080
+npm test              # Vitest (jsdom). Regenerates the asset manifest first.
+npm run test:watch    # Vitest in watch mode
+npm run build:prod    # UMD + ESM + CJS into dist/, plus declarations into dist/types/
+npm run build:dev     # UMD only, into build/
+npm run assets        # Regenerate src/assets.generated.ts from assets/
+npm run lint          # ESLint with auto-fix
+npm run typecheck     # tsc -p tsconfig.json --noEmit
+```
 
 ## Architecture
 
-The entire library is a single class in `src/HedgeHogify.ts`:
+The library is one class in `src/HedgeHogify.ts`, with types in `src/types.ts`.
 
-- **Constructor** accepts an optional config object (`disableSteve`, `disableMonsters` flags)
-- **`burst(count)`** — Creates `count` (default 50) hedgehog image elements as fixed-position overlays on the page, auto-clears after 10 seconds
-- **`konami(callback)`** — Listens for the Konami code key sequence and triggers the callback
-- **`clear()` (static)** — Removes all `.hedgehogify-image` elements from the DOM
-- **`add()` (private)** — Creates individual hedgehog DOM elements with random positioning, sizing, and mouse interaction animations (scale/rotate on hover)
+- **`burst(count)`** — Creates `count` (default 50) fixed-position hedgehog overlays, then
+  auto-clears after `duration` (default 10s).
+- **`konami(callback)`** — Watches for the Konami code. Matching uses a sliding window over
+  `KeyboardEvent.key`, falling back to `keyCode` for legacy events. Replaces any previously
+  registered listener; `destroy()` removes it.
+- **`clear()`** (static) — Removes all `.hedgehogify-image` elements.
+- **`add()`** (private) — Builds a single hedgehog element with random position, size, and
+  hover transforms. Every 15th is a large centered one.
 
-Images are fetched from `https://content.nowtwo-llc.com/` with query parameters for cache-busting, current URL, and character disable flags.
+Custom events `he:hedgehogify:start` and `he:hedgehogify:stop` are dispatched on `document`.
 
-Custom events `he:hedgehogify:start` and `he:hedgehogify:stop` are dispatched on `document` during burst lifecycle.
+### Images
 
-## Build Pipeline
+Images are **local files in `assets/`**, bundled into the published package. There is no
+backend. Prior versions fetched every image from `content.nowtwo-llc.com/hedgehogify.php`,
+passing along the host page URL; that host is dead and the phone-home is gone.
 
-Webpack 5 bundles `src/HedgeHogify.ts` as UMD format (library name: `HedgeHogify`). TypeScript compiles to ES5 for broad browser compatibility. CSS/SCSS is extracted via MiniCssExtractPlugin. The `example/` directory contains a working HTML demo.
+`src/assets.generated.ts` is generated from `assets/` by `scripts/generate-assets.mjs` —
+**never edit it by hand**. The filename prefix (`hedgie-`, `steve-`, `monster-`) determines
+the character, which is how `disableSteve` / `disableMonsters` filter client-side.
+
+The asset base URL resolves in this order:
+
+1. an explicit `imageBaseUrl` config option,
+2. `../assets/` relative to the `<script>` that loaded the UMD bundle (captured at module
+   evaluation time, since `document.currentScript` is null by the time the constructor runs),
+3. the `DEFAULT_ASSET_BASE_URL` constant, pointing at GitHub Pages.
+
+Bundler consumers hit case 3 unless they set `imageBaseUrl`, because a bundled library has
+no script tag to resolve against.
+
+**The three `*-placeholder.svg` files are stand-ins, not shipping artwork.** The original
+illustrations were never in this repo — they only ever lived on the dead PHP host — so real
+art has to be supplied before release.
+
+## Build System
+
+Webpack 5 emits three bundles from one config array (`webpack.config.js`), matching the
+sibling `nt-fireworksify` repo:
+
+| Bundle                 | Format     | Notes                                     |
+| ---------------------- | ---------- | ----------------------------------------- |
+| `hedgehogify.min.js`   | UMD        | Script tag / unpkg / jsDelivr. Minified.  |
+| `hedgehogify.mjs`      | ESM        | The `import` condition. Unminified so consumers can tree-shake. |
+| `hedgehogify.cjs`      | CommonJS   | The `require` condition.                  |
+
+Declarations are emitted separately by `tsc -p tsconfig.types.json` into `dist/types/`.
+ts-loader has `declaration: false` because three parallel compilers would otherwise race to
+write the same `.d.ts` files.
+
+`tsconfig.json` is deliberately emit-free — webpack owns bundles, `tsconfig.types.json` owns
+declarations — so it can cover `src`, `tests`, and `example` for the editor, typecheck, and
+type-aware lint rules.
+
+## Versions & Constraints
+
+- **TypeScript is pinned to 6.x.** `typescript-eslint` peers `typescript <6.1.0`, so TS 7 is
+  blocked until that lifts. Unlike `nt-fireworksify`, this repo already dropped `target: es5`
+  and `moduleResolution: node` for ES2018 + `bundler`, so it needs no `ignoreDeprecations`.
+- **ESLint 10 flat config** (`eslint.config.mjs`): `@eslint/js` + typescript-eslint
+  (type-checked) + Prettier. Eslintrc is not supported by ESLint 10 at all.
+- Type-aware rules run on TS only; `**/*.js` opts out via `disableTypeChecked` since those
+  files aren't in `tsconfig.json`.
+- Test files disable `no-unused-expressions` for chai-style assertions.
+
+## Testing
+
+Vitest with jsdom, `tests/**/*.spec.ts`. Assertions use the chai-style `expect(x).to.equal()`
+API, matching `nt-fireworksify`.
+
+`tests/unit/HedgeHogify.empty-assets.spec.ts` is a separate file because its `vi.mock` of the
+generated manifest is hoisted and would otherwise empty the asset pool for the whole suite.
+
+## Demo & Deployment
+
+`example/` is the demo, deployed to GitHub Pages by `.github/workflows/pages.yml`. The
+workflow mirrors the repo layout (`_site/example/`, `_site/dist/`, `_site/assets/`) plus a
+root redirect, so the page's relative `../dist/` and `../assets/` paths work identically
+locally and deployed — nothing is rewritten. `scripts/serve-demo.mjs` redirects `/` to
+`/example/` for the same reason.
+
+`.github/workflows/publish.yml` publishes to GitHub Packages on release, verifying the tag
+matches `package.json` first.
 
 ## Code Style
 
-- ESLint extends airbnb-base + TypeScript recommended + Prettier
-- Prettier: 120 char line width, 4-space tabs, single quotes, no trailing commas
-- Stylelint for CSS/SCSS files
-- `no-underscore-dangle` is disabled (internal properties use underscore prefix convention)
+- Prettier: 120 char width, 4-space indent, single quotes, no trailing commas, arrow parens
+- `no-underscore-dangle` is off (private fields use an underscore prefix)
 - `@typescript-eslint/no-explicit-any` is off
