@@ -151,6 +151,10 @@ the host page leaves the visitor's machine.
 
 ## Development
 
+Requires **Node 22 or newer** — jsdom 30 (used by the test suite) does not run on Node 20.
+That is a toolchain requirement only; the published package is browser code and never runs
+in Node.
+
 ```bash
 npm install
 npm run demo        # build, then serve the demo at http://localhost:5050
