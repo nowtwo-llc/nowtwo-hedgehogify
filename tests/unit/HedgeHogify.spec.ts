@@ -395,10 +395,40 @@ describe('HedgeHogify', () => {
         const firstDiv = (): HTMLElement => queryAll('.hedgehogify-image')[0];
         const firstImg = (): HTMLElement => queryAll('.hedgehogify-image img')[0];
 
+        const hover = (el: HTMLElement): void => {
+            const event = new MouseEvent('mouseover', { bubbles: true });
+            Object.defineProperty(event, 'target', { value: el, enumerable: true });
+            el.onmouseover?.(event);
+        };
+
         it('spins the image a full turn on click', () => {
             create().burst(1);
             firstDiv().click();
             expect(firstImg().style.transform).to.equal('rotateY(360deg)');
+        });
+
+        it('spins on the very first click after hovering', () => {
+            // Regression: hover used to write its transform onto the image, so the
+            // first click interpolated to a matrix and shrank instead of spinning.
+            create().burst(1);
+            hover(firstDiv());
+            firstDiv().click();
+            expect(firstImg().style.transform).to.equal('rotateY(360deg)');
+        });
+
+        it('keeps hover transforms on the container, off the image', () => {
+            create().burst(1);
+            hover(firstDiv());
+            expect(firstDiv().style.transform).to.include('scale');
+            expect(firstImg().style.transform).to.equal('');
+        });
+
+        it('leaves the hover transform intact while spinning', () => {
+            create().burst(1);
+            hover(firstDiv());
+            const hovered = firstDiv().style.transform;
+            firstDiv().click();
+            expect(firstDiv().style.transform).to.equal(hovered);
         });
 
         it('transitions the transform rather than snapping', () => {
