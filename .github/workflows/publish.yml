@@ -1,0 +1,43 @@
+name: Publish to GitHub Packages
+
+on:
+    release:
+        types: [published]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    packages: write
+    id-token: write
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22.x
+                  cache: npm
+                  registry-url: https://npm.pkg.github.com
+                  scope: '@nowtwo-llc'
+
+            - run: npm ci
+
+            - name: Verify the release tag matches package.json
+              run: |
+                  PKG_VERSION="v$(node -p "require('./package.json').version")"
+                  if [ "${{ github.event_name }}" = "release" ] && [ "$PKG_VERSION" != "${{ github.ref_name }}" ]; then
+                    echo "Tag ${{ github.ref_name }} does not match package.json ($PKG_VERSION)" >&2
+                    exit 1
+                  fi
+
+            - name: Test
+              run: npm test
+
+            # prepublishOnly runs build:prod, so dist/ is produced here.
+            - name: Publish
+              run: npm publish --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

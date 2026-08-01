@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="200" height="160" role="img" aria-label="Placeholder dog">
+    <ellipse cx="100" cy="104" rx="66" ry="46" fill="#c8862f" />
+    <ellipse cx="52" cy="70" rx="20" ry="34" fill="#a86e22" transform="rotate(-18 52 70)" />
+    <ellipse cx="148" cy="70" rx="20" ry="34" fill="#a86e22" transform="rotate(18 148 70)" />
+    <circle cx="80" cy="96" r="6" fill="#2b2b2b" />
+    <circle cx="120" cy="96" r="6" fill="#2b2b2b" />
+    <ellipse cx="100" cy="118" rx="11" ry="8" fill="#2b2b2b" />
+    <text x="100" y="152" font-family="monospace" font-size="13" text-anchor="middle" fill="#6b4715">PLACEHOLDER</text>
+</svg>

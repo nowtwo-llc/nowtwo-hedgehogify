@@ -1,20 +1,182 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Hedgehogify Example</title>
+        <title>Hedgehogify — a burst of hedgehogs for your website</title>
+        <meta
+            name="description"
+            content="A lightweight library that makes animated hedgehogs burst across your website."
+        />
         <style>
-            html, body {
+            :root {
+                --bg: #f4f1ec;
+                --fg: #2a2118;
+                --muted: #6d6155;
+                --accent: #8d6748;
+                --card: #fffdfa;
+                --border: #e0d8cd;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg: #1a1613;
+                    --fg: #f0e9e0;
+                    --muted: #a89988;
+                    --accent: #c79a6d;
+                    --card: #241f1a;
+                    --border: #3a322a;
+                }
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
                 margin: 0;
-                padding: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem 1.25rem;
+                background: var(--bg);
+                color: var(--fg);
+                font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+                line-height: 1.6;
+            }
+
+            main {
+                position: relative;
+                z-index: 2000;
+                max-width: 34rem;
                 width: 100%;
-                height: 100%;
-                background-color: #e9e9e9;
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 2.25rem;
+                box-shadow: 0 12px 40px rgb(0 0 0 / 8%);
+            }
+
+            h1 {
+                margin: 0 0 0.35rem;
+                font-size: clamp(1.9rem, 5vw, 2.6rem);
+                letter-spacing: -0.02em;
+            }
+
+            .tagline {
+                margin: 0 0 1.75rem;
+                color: var(--muted);
+            }
+
+            .controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.6rem;
+                margin-bottom: 1.5rem;
+            }
+
+            button {
+                flex: 1 1 auto;
+                padding: 0.7rem 1.15rem;
+                font: inherit;
+                font-weight: 600;
+                color: #fff;
+                background: var(--accent);
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition:
+                    transform 0.08s ease,
+                    filter 0.15s ease;
+            }
+
+            button.secondary {
+                color: var(--fg);
+                background: transparent;
+                border: 1px solid var(--border);
+            }
+
+            button:hover {
+                filter: brightness(1.08);
+            }
+
+            button:active {
+                transform: translateY(1px);
+            }
+
+            .options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                padding-top: 1.25rem;
+                border-top: 1px solid var(--border);
+                color: var(--muted);
+                font-size: 0.92rem;
+            }
+
+            label {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                cursor: pointer;
+            }
+
+            .hint {
+                margin: 1.25rem 0 0;
+                color: var(--muted);
+                font-size: 0.88rem;
+            }
+
+            kbd {
+                padding: 0.1rem 0.4rem;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: 0.85em;
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+            }
+
+            #status {
+                min-height: 1.4em;
+                margin-top: 0.5rem;
+                color: var(--accent);
+                font-size: 0.88rem;
+                font-weight: 600;
+            }
+
+            a {
+                color: var(--accent);
             }
         </style>
     </head>
     <body>
+        <main>
+            <h1>Hedgehogify</h1>
+            <p class="tagline">The best way to get hedgehogs to explode all over a website.</p>
+
+            <div class="controls">
+                <button id="burst" type="button">Burst!</button>
+                <button id="burst-small" type="button" class="secondary">Just a few</button>
+                <button id="clear" type="button" class="secondary">Clear</button>
+            </div>
+
+            <div class="options">
+                <label><input id="disable-steve" type="checkbox" /> Disable Steve</label>
+                <label><input id="disable-monsters" type="checkbox" /> Disable monsters</label>
+            </div>
+
+            <p class="hint">
+                Or enter the Konami code — <kbd>↑</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>↓</kbd> <kbd>←</kbd>
+                <kbd>→</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>B</kbd> <kbd>A</kbd>
+            </p>
+            <p id="status" role="status"></p>
+
+            <p class="hint">
+                <a href="https://github.com/nowtwo-llc/nowtwo-hedgehogify">Source on GitHub</a>
+            </p>
+        </main>
+
         <script src="../dist/hedgehogify.min.js"></script>
         <script src="./main.js"></script>
     </body>
