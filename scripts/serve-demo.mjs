@@ -10,7 +10,9 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PORT = Number(process.env.PORT) || 8080;
+// 5050 rather than 8080 (commonly taken by Docker) or 5000 (macOS AirPlay
+// Receiver). Override with PORT=… if it clashes.
+const PORT = Number(process.env.PORT) || 5050;
 
 const CONTENT_TYPES = {
     '.html': 'text/html; charset=utf-8',

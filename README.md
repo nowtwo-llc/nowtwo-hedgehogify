@@ -146,7 +146,7 @@ the host page leaves the visitor's machine.
 
 ```bash
 npm install
-npm run demo        # build, then serve the demo at http://localhost:8080
+npm run demo        # build, then serve the demo at http://localhost:5050
 npm test            # Vitest, jsdom
 npm run build:prod  # UMD + ESM + CJS into dist/, plus declarations
 npm run lint        # ESLint with auto-fix
