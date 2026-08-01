@@ -28,4 +28,10 @@ export interface HedgeHogifyConfig {
     imageBaseUrl?: string;
     /** Number of milliseconds before a burst clears itself. Default `10000`. */
     duration?: number;
+    /**
+     * When true, clicking or tapping a hedgehog no longer spins it. Default `false`.
+     *
+     * The flip is skipped automatically for visitors who prefer reduced motion.
+     */
+    disableFlip?: boolean;
 }

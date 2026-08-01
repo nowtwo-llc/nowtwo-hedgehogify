@@ -36,6 +36,16 @@ The library is one class in `src/HedgeHogify.ts`, with types in `src/types.ts`.
 - **`clear()`** (static) — Removes all `.hedgehogify-image` elements.
 - **`add()`** (private) — Builds a single hedgehog element with random position, size, and
   hover transforms. Every 15th is a large centered one.
+- **`flip()`** (private static) — Click/tap spins the image `rotateY(360deg)` over 600ms.
+  A full turn means no back-face art is needed and the inline transform can just be dropped
+  afterwards. `perspective` goes on the container so it reads 3D rather than as a flat
+  squash. Guarded by a `data-hedgehogify-flipping` attribute against repeat clicks, and
+  skipped for `prefers-reduced-motion`. Disable with `disableFlip: true`.
+
+Note the hedgehog overlays are `position: fixed` at `z-index: 10` with live pointer
+handlers, so they intercept clicks on the host page for the duration of a burst. The flip
+makes that deliberate; `pointer-events: none` would be the alternative, but it would rule
+out any click interaction.
 
 Custom events `he:hedgehogify:start` and `he:hedgehogify:stop` are dispatched on `document`.
 

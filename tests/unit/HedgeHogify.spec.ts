@@ -389,6 +389,105 @@ describe('HedgeHogify', () => {
         });
     });
 
+    // ── Click / tap flip ───────────────────────────────────────────────
+
+    describe('flip on click', () => {
+        const firstDiv = (): HTMLElement => queryAll('.hedgehogify-image')[0];
+        const firstImg = (): HTMLElement => queryAll('.hedgehogify-image img')[0];
+
+        it('spins the image a full turn on click', () => {
+            create().burst(1);
+            firstDiv().click();
+            expect(firstImg().style.transform).to.equal('rotateY(360deg)');
+        });
+
+        it('transitions the transform rather than snapping', () => {
+            create().burst(1);
+            firstDiv().click();
+            expect(firstImg().style.transition).to.include('transform');
+            expect(firstImg().style.transition).to.include('600ms');
+        });
+
+        it('sets perspective so the spin reads as 3D', () => {
+            create().burst(1);
+            expect(firstDiv().style.perspective).to.equal('800px');
+        });
+
+        it('shows a pointer cursor as a click affordance', () => {
+            create().burst(1);
+            expect(firstDiv().style.cursor).to.equal('pointer');
+        });
+
+        it('clears the inline transform once the spin finishes', () => {
+            vi.useFakeTimers();
+            create().burst(1);
+            firstDiv().click();
+            vi.advanceTimersByTime(600);
+            expect(firstImg().style.transform).to.equal('');
+            expect(firstImg().style.transition).to.equal('');
+            vi.useRealTimers();
+        });
+
+        it('ignores repeat clicks while a spin is running', () => {
+            vi.useFakeTimers();
+            create().burst(1);
+            firstDiv().click();
+            vi.advanceTimersByTime(300);
+            firstDiv().click(); // mid-spin, must not restart
+            vi.advanceTimersByTime(300);
+            // The first spin's timer still owns the cleanup at t=600.
+            expect(firstImg().style.transform).to.equal('');
+            vi.useRealTimers();
+        });
+
+        it('can be clicked again after the spin completes', () => {
+            vi.useFakeTimers();
+            create().burst(1);
+            firstDiv().click();
+            vi.advanceTimersByTime(600);
+            firstDiv().click();
+            expect(firstImg().style.transform).to.equal('rotateY(360deg)');
+            vi.useRealTimers();
+        });
+
+        it('attaches no click handler when disableFlip is set', () => {
+            create({ disableFlip: true }).burst(1);
+            expect(firstDiv().onclick).to.equal(null);
+            expect(firstDiv().style.cursor).to.equal('');
+            firstDiv().click();
+            expect(firstImg().style.transform).to.equal('');
+        });
+
+        it('skips the spin when reduced motion is preferred', () => {
+            // jsdom does not implement matchMedia, so it is stubbed rather than spied on.
+            vi.stubGlobal('matchMedia', () => ({ matches: true }) as MediaQueryList);
+
+            create().burst(1);
+            firstDiv().click();
+            expect(firstImg().style.transform).to.equal('');
+
+            vi.unstubAllGlobals();
+        });
+
+        it('still spins when reduced motion is not preferred', () => {
+            vi.stubGlobal('matchMedia', () => ({ matches: false }) as MediaQueryList);
+
+            create().burst(1);
+            firstDiv().click();
+            expect(firstImg().style.transform).to.equal('rotateY(360deg)');
+
+            vi.unstubAllGlobals();
+        });
+
+        it('spins normally in environments with no matchMedia at all', () => {
+            // The jsdom default — the guard must not throw when the API is absent.
+            expect(typeof window.matchMedia).to.equal('undefined');
+            create().burst(1);
+            expect(() => firstDiv().click()).to.not.throw();
+            expect(firstImg().style.transform).to.equal('rotateY(360deg)');
+        });
+    });
+
     // ── konami() ───────────────────────────────────────────────────────
 
     describe('konami()', () => {
