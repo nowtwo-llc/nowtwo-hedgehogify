@@ -316,15 +316,22 @@ export class HedgeHogify {
             };
         }
 
-        divEl.onmouseover = (ev: MouseEvent): void => {
+        // Hover transforms the container while the flip transforms the image, so the
+        // two never write to the same `transform`. Sharing one element made the first
+        // click interpolate `rotate()/scale()` to `rotateY(360deg)` as a matrix —
+        // which is the identity — so the hedgehog shrank instead of spinning.
+        //
+        // Uses the closure rather than `ev.target`, which resolves to the child image
+        // once a real mouseover bubbles up from it.
+        divEl.onmouseover = (): void => {
             const size = 1 + Math.round(Math.random() * 10) / 100;
             const angle = Math.round(Math.random() * 20 - 10);
-            (ev.target as HTMLElement).style.transform = `rotate(${angle}deg) scale(${size},${size})`;
+            divEl.style.transform = `rotate(${angle}deg) scale(${size},${size})`;
         };
-        divEl.onmouseout = (ev: MouseEvent): void => {
+        divEl.onmouseout = (): void => {
             const size = 0.9 + Math.round(Math.random() * 10) / 100;
             const angle = Math.round(Math.random() * 6 - 3);
-            (ev.target as HTMLElement).style.transform = `rotate(${angle}deg) scale(${size},${size})`;
+            divEl.style.transform = `rotate(${angle}deg) scale(${size},${size})`;
         };
 
         document.body.appendChild(divEl);
