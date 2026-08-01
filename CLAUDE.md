@@ -14,7 +14,7 @@ the nowtwo-llc / nowtwo LLC branding; that name is retired.
 ## Commands
 
 ```bash
-npm run demo          # build:prod, then serve the demo at http://localhost:8080
+npm run demo          # build:prod, then serve the demo at http://localhost:5050 (PORT= to override)
 npm test              # Vitest (jsdom). Regenerates the asset manifest first.
 npm run test:watch    # Vitest in watch mode
 npm run build:prod    # UMD + ESM + CJS into dist/, plus declarations into dist/types/

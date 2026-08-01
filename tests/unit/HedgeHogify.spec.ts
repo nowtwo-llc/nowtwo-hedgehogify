@@ -281,7 +281,8 @@ describe('HedgeHogify', () => {
         });
 
         it('sets image width between 100px and 350px', () => {
-            create().burst(20);
+            // The 15th is the large centered hedgehog and is sized separately.
+            create().burst(14);
             queryAll('.hedgehogify-image img').forEach((img) => {
                 const width = parseInt(img.style.width, 10);
                 expect(width).to.be.at.least(100);
@@ -324,6 +325,30 @@ describe('HedgeHogify', () => {
             create().burst(15);
             const left = queryAll('.hedgehogify-image')[14].style.left;
             expect(parseInt(left, 10)).to.be.at.least(0);
+        });
+
+        it('actually renders the 15th at the large size', () => {
+            create().burst(15);
+            const img = queryAll('.hedgehogify-image img')[14];
+            expect(parseInt(img.style.width, 10)).to.equal(530);
+        });
+
+        it('centres the large hedgehog against its own rendered width', () => {
+            // Regression: the element was centred as though it were 530px wide
+            // while the image rendered at a random 100-350px, leaving it off-centre.
+            create().burst(15);
+            const div = queryAll('.hedgehogify-image')[14];
+            const img = queryAll('.hedgehogify-image img')[14];
+            const width = parseInt(img.style.width, 10);
+            const expectedLeft = Math.max(0, Math.round((window.innerWidth - width) / 2));
+            expect(parseInt(div.style.left, 10)).to.equal(expectedLeft);
+        });
+
+        it('sizes only the 15th element large across a bigger burst', () => {
+            create().burst(30);
+            const widths = Array.from(queryAll('.hedgehogify-image img')).map((img) => parseInt(img.style.width, 10));
+            expect(widths.filter((w) => w === 530)).to.have.lengthOf(1);
+            expect(widths[14]).to.equal(530);
         });
     });
 

@@ -26,8 +26,13 @@ Supported extensions: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`.
 `npm run build` regenerates the manifest automatically, so a normal build picks up new
 files without a separate step.
 
-## Placeholders
+## Current set
 
-`hedgie-placeholder.svg`, `steve-placeholder.svg`, and `monster-placeholder.svg` are
-stand-ins so the demo and test suite have something to render. **Replace them with the real
-artwork before publishing** and delete these three files — they are not shipping art.
+29 images: 20 Hedgie, 6 Steve, 3 monster. Roughly 1000px on the long edge, ~1.4 MB total.
+
+These were recovered from `files.nowtwo-llc.com/images/characters/` (CloudFront in
+front of S3) after the old `content.nowtwo-llc.com` image service went offline. They
+are now versioned here, so the library no longer depends on any host staying up.
+
+The library renders images at 100–350px wide, and 530px for the large centered one, so
+~1000px is about right for a 2× display. There is no need for larger source art.

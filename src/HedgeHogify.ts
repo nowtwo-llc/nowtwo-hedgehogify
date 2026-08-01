@@ -225,7 +225,16 @@ export class HedgeHogify {
         }
 
         // Every LARGE_HEDGEHOG_THRESHOLD-th hedgehog is a large one, centered on screen.
-        if (this._hedgeHogifyCount === LARGE_HEDGEHOG_THRESHOLD) {
+        const isLarge = this._hedgeHogifyCount === LARGE_HEDGEHOG_THRESHOLD;
+
+        // The centering below positions the element as though it were
+        // LARGE_HEDGEHOG_SIZE wide, so the image has to actually be that wide or
+        // it lands off-centre.
+        const width = isLarge
+            ? LARGE_HEDGEHOG_SIZE
+            : Math.floor(Math.random() * (MAX_IMAGE_WIDTH - MIN_IMAGE_WIDTH)) + MIN_IMAGE_WIDTH;
+
+        if (isLarge) {
             divEl.style.top = `${Math.max(0, Math.round((this._windowHeight - LARGE_HEDGEHOG_SIZE) / 2))}px`;
             divEl.style.left = `${Math.max(0, Math.round((this._windowWidth - LARGE_HEDGEHOG_SIZE) / 2))}px`;
             divEl.style.zIndex = '1000';
@@ -239,7 +248,7 @@ export class HedgeHogify {
         imgEl.setAttribute('src', `${this._imageBaseUrl}${asset.file}`);
         imgEl.setAttribute('alt', 'Hedgehog');
         imgEl.setAttribute('loading', 'lazy');
-        imgEl.style.width = `${Math.floor(Math.random() * (MAX_IMAGE_WIDTH - MIN_IMAGE_WIDTH)) + MIN_IMAGE_WIDTH}px`;
+        imgEl.style.width = `${width}px`;
 
         divEl.onmouseover = (ev: MouseEvent): void => {
             const size = 1 + Math.round(Math.random() * 10) / 100;
