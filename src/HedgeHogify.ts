@@ -60,6 +60,27 @@ const MAX_HEIGHT_RATIO = 0.75;
 /** CSS class applied to every element this library adds to the page. */
 const ELEMENT_CLASS = 'hedgehogify-image';
 
+/** Duration of the click/tap flip, in milliseconds. */
+const FLIP_DURATION_MS = 600;
+
+/**
+ * Depth applied to the container during a flip. Without it, `rotateY` reads as a
+ * flat horizontal squash rather than a spin.
+ */
+const FLIP_PERSPECTIVE = '800px';
+
+/** Marks an element mid-flip so rapid clicks don't restart the animation. */
+const FLIPPING_ATTRIBUTE = 'data-hedgehogify-flipping';
+
+/**
+ * Whether the visitor has asked for reduced motion. Checked per flip rather than
+ * cached, so the effect responds if the OS setting changes mid-session.
+ */
+const prefersReducedMotion = (): boolean =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /**
  * The `src` of the script that loaded us, captured at module evaluation time.
  *
@@ -85,12 +106,19 @@ export class HedgeHogify {
     private readonly _assets: readonly HedgehogAsset[];
     private readonly _imageBaseUrl: string;
     private readonly _duration: number;
+    private readonly _flipOnClick: boolean;
 
     private _input: string[] = [];
     private _keydownHandler: ((ev: KeyboardEvent) => void) | null = null;
 
     constructor(config: HedgeHogifyConfig = {}) {
-        const { disableSteve = false, disableMonsters = false, imageBaseUrl, duration = BURST_DURATION_MS } = config;
+        const {
+            disableSteve = false,
+            disableMonsters = false,
+            imageBaseUrl,
+            duration = BURST_DURATION_MS,
+            disableFlip = false
+        } = config;
 
         this._assets = ASSETS.filter((asset) => {
             if (disableSteve && asset.character === 'steve') {
@@ -104,6 +132,33 @@ export class HedgeHogify {
 
         this._imageBaseUrl = HedgeHogify.resolveAssetBaseUrl(imageBaseUrl);
         this._duration = duration;
+        this._flipOnClick = !disableFlip;
+    }
+
+    /**
+     * Spins a hedgehog a full turn on click or tap.
+     *
+     * A full 360° rotation means there is no back face to illustrate — the image
+     * lands exactly where it started, so the inline transform can simply be
+     * dropped once the animation finishes.
+     */
+    private static flip(imgEl: HTMLImageElement): void {
+        // Ignore clicks while a spin is already running, rather than restarting it.
+        if (imgEl.hasAttribute(FLIPPING_ATTRIBUTE) || prefersReducedMotion()) {
+            return;
+        }
+
+        imgEl.setAttribute(FLIPPING_ATTRIBUTE, '');
+        imgEl.style.transition = `transform ${FLIP_DURATION_MS}ms cubic-bezier(0.34, 1.16, 0.64, 1)`;
+        imgEl.style.transform = 'rotateY(360deg)';
+
+        setTimeout(() => {
+            // 360° and no transform render identically, so clearing the transition
+            // first removes the inline styles without the image spinning back.
+            imgEl.style.transition = '';
+            imgEl.style.transform = '';
+            imgEl.removeAttribute(FLIPPING_ATTRIBUTE);
+        }, FLIP_DURATION_MS);
     }
 
     /**
@@ -249,6 +304,17 @@ export class HedgeHogify {
         imgEl.setAttribute('alt', 'Hedgehog');
         imgEl.setAttribute('loading', 'lazy');
         imgEl.style.width = `${width}px`;
+
+        if (this._flipOnClick) {
+            divEl.style.perspective = FLIP_PERSPECTIVE;
+            divEl.style.cursor = 'pointer';
+            // Bound on the container so a tap anywhere in the element counts, but
+            // the transform lands on the image so the container's own positioning
+            // styles are left alone.
+            divEl.onclick = (): void => {
+                HedgeHogify.flip(imgEl);
+            };
+        }
 
         divEl.onmouseover = (ev: MouseEvent): void => {
             const size = 1 + Math.round(Math.random() * 10) / 100;

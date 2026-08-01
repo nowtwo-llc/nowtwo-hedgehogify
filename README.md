@@ -93,9 +93,16 @@ Fires on ↑ ↑ ↓ ↓ ← → ← → B A. Call `destroy()` to remove the lis
 | `disableMonsters` | `boolean` | `false`          | Removes the monsters that torment Hedgie.                 |
 | `imageBaseUrl`    | `string`  | auto-detected    | Where the images are served from. A trailing slash is added if missing. |
 | `duration`        | `number`  | `10000`          | Milliseconds before a burst clears itself.                |
+| `disableFlip`     | `boolean` | `false`          | Turns off the click/tap spin.                             |
 
 Character filtering is applied when the instance is constructed, so change a flag by
 creating a new instance.
+
+### Click to flip
+
+Clicking or tapping a hedgehog spins it a full turn. It is on by default, skipped
+automatically for visitors with `prefers-reduced-motion: reduce`, and turned off with
+`disableFlip: true`.
 
 ### Methods
 
