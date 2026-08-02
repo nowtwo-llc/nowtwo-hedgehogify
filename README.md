@@ -1,5 +1,6 @@
 # Hedgehogify
 
+[![npm](https://img.shields.io/npm/v/@nowtwo-llc/hedgehogify.svg)](https://www.npmjs.com/package/@nowtwo-llc/hedgehogify)
 [![CI](https://github.com/nowtwo-llc/nowtwo-hedgehogify/actions/workflows/ci.yml/badge.svg)](https://github.com/nowtwo-llc/nowtwo-hedgehogify/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
@@ -7,27 +8,11 @@ The best way to get hedgehogs to explode all over a website.
 
 Hedgie the hedgehog and friends burst across the page, hang around for ten seconds, and
 clean up after themselves. It is a tiny, dependency-free TypeScript library — the minified
-UMD bundle is about 4 KB.
+UMD bundle is about 6 KB.
 
 **[Try the demo →](https://nowtwo-llc.github.io/nowtwo-hedgehogify/)**
 
 ## Install
-
-This package is published to GitHub Packages. Point the `@nowtwo-llc` scope at the GitHub
-registry, in a `.npmrc` next to your `package.json`:
-
-```
-@nowtwo-llc:registry=https://npm.pkg.github.com
-```
-
-GitHub Packages requires authentication for every install, including public packages, so
-you will also need a personal access token with `read:packages`:
-
-```
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-```
-
-Then:
 
 ```bash
 npm install @nowtwo-llc/hedgehogify
@@ -35,15 +20,19 @@ npm install @nowtwo-llc/hedgehogify
 
 ### Script tag
 
-No build step, no auth — grab the UMD bundle and go. It exposes `HedgeHogify` as a global
-and finds its images automatically, relative to the script's own URL.
+No build step — grab the UMD bundle and go. It exposes `HedgeHogify` as a global and finds
+its images automatically, relative to the script's own URL.
 
 ```html
-<script src="https://nowtwo-llc.github.io/nowtwo-hedgehogify/dist/hedgehogify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@nowtwo-llc/hedgehogify/dist/hedgehogify.min.js"></script>
 <script>
     new HedgeHogify().burst();
 </script>
 ```
+
+Because the images ship inside the package, jsDelivr serves them alongside the bundle and
+they resolve on their own. Pin a version for production — `@nowtwo-llc/hedgehogify@3.0.0` —
+so the artwork can never drift out of step with the code. unpkg works the same way.
 
 ## Usage
 
