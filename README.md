@@ -37,13 +37,24 @@ so the artwork can never drift out of step with the code. unpkg works the same w
 ## Usage
 
 ```javascript
-import { HedgeHogify } from '@nowtwo-llc/hedgehogify';
+import HedgeHogify from '@nowtwo-llc/hedgehogify';
 
 const hedgehogify = new HedgeHogify();
 hedgehogify.burst();
 ```
 
 A burst drops 50 hedgehogs on the page and clears them after ten seconds.
+
+The class is available as both the default and a named export, so use whichever fits your
+codebase:
+
+```javascript
+import HedgeHogify from '@nowtwo-llc/hedgehogify';
+import { HedgeHogify } from '@nowtwo-llc/hedgehogify';
+```
+
+The UMD bundle exposes `HedgeHogify` as a global and deliberately does not define a
+`default` global.
 
 ### Bundlers need an image URL
 

@@ -1,50 +1,58 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
-    contents: read
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  verify:
+    runs-on: ubuntu-latest
 
-        strategy:
-            fail-fast: false
-            matrix:
-                # Node 20 is excluded deliberately: jsdom 30 requires
-                # ^22.22.2 || ^24.15.0 || >=26.0.0 and crashes on 20.x with
-                # "webidl.util.markAsUncloneable is not a function". Node 20 also
-                # reached end-of-life in April 2026.
-                #
-                # This is a development-toolchain floor only. The published package
-                # is browser code and never executes in Node, so `engines` stays
-                # permissive for consumers.
-                node-version: [22.x, 24.x]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-        steps:
-            - uses: actions/checkout@v5
+      # Node 22 is the floor: jsdom 30 requires ^22.22.2 || ^24.15.0 || >=26.0.0
+      # and dies on Node 20 with "webidl.util.markAsUncloneable is not a
+      # function" before any test runs. Node 20 is also past end-of-life.
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: npm
 
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v5
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: npm
+      - name: Install dependencies
+        run: npm ci
 
-            - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
 
-            - name: Lint
-              run: npm run eslint -- --no-fix
+      # lint:check rather than lint: the latter runs eslint --fix, which would
+      # repair violations in the ephemeral checkout and pass regardless.
+      - name: Lint
+        run: npm run lint:check
 
-            - name: Typecheck
-              run: npm run typecheck
+      # The manifest is committed, so a new image added without running
+      # `npm run assets` would otherwise only surface at build time.
+      - name: Verify the asset manifest is up to date
+        run: |
+          npm run assets
+          git diff --exit-code src/assets.generated.ts
 
-            - name: Test
-              run: npm test
+      # Runs the suite with coverage so the thresholds in vitest.config.mts
+      # are actually enforced; a plain `npm test` would skip them entirely.
+      - name: Test
+        run: npm run test:coverage
 
-            - name: Build
-              run: npm run build:prod
+      - name: Build
+        run: npm run build:prod
+
+      - name: Verify package contents
+        run: npm pack --dry-run

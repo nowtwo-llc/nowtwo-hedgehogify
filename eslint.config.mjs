@@ -5,7 +5,7 @@ import prettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default tseslint.config(
     {
-        ignores: ['build/', 'dist/', 'node_modules/', 'eslint-report.html']
+        ignores: ['build/', 'dist/', 'coverage/', 'node_modules/', 'eslint-report.html']
     },
 
     js.configs.recommended,

@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # Workflow actions are the highest-value thing to keep current: a compromised
+  # or stale action runs with this repo's token on every push. The workflows pin
+  # actions by commit SHA, so this is what moves those pins.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      # One PR for the routine dev-tooling churn instead of a dozen.
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # TypeScript 7 is the native Go port and exposes no JS compiler API, so
+      # ts-loader breaks entirely. Any move to 7 is a deliberate migration,
+      # not a dependency bump.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
+
+      # jsdom majors move the Node floor: 30 already requires Node >= 22.22.2
+      # and broke the Node 20 CI leg. Bumping it is a CI-matrix decision.
+      - dependency-name: jsdom
+        update-types:
+          - version-update:semver-major

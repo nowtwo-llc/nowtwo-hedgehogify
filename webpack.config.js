@@ -53,6 +53,10 @@ const productionPlugins = () => [
 const umdConfig = {
     ...baseConfig,
     name: 'umd',
+    // Built from src/umd.ts, not src/HedgeHogify.ts: this output copies every
+    // export onto the global object, and the default export would land there
+    // as `window.default`.
+    entry: './src/umd.ts',
     target: ['web', 'es2018'],
     output: {
         path: BUILD_DIR,

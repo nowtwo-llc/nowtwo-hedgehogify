@@ -8,173 +8,92 @@
             name="description"
             content="A lightweight library that makes animated hedgehogs burst across your website."
         />
+
+        <link rel="stylesheet" href="./demo.css" />
         <style>
+            /* Hedgehogify's identity: the earthy brown of the artwork. */
             :root {
-                --bg: #f4f1ec;
-                --fg: #2a2118;
-                --muted: #6d6155;
-                --accent: #8d6748;
-                --card: #fffdfa;
-                --border: #e0d8cd;
+                --nt-accent: #8f5c33;
+                --nt-accent-ink: #fff;
             }
 
-            @media (prefers-color-scheme: dark) {
-                :root {
-                    --bg: #1a1613;
-                    --fg: #f0e9e0;
-                    --muted: #a89988;
-                    --accent: #c79a6d;
-                    --card: #241f1a;
-                    --border: #3a322a;
-                }
-            }
-
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                margin: 0;
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 2rem 1.25rem;
-                background: var(--bg);
-                color: var(--fg);
-                font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-                line-height: 1.6;
-            }
-
-            main {
+            /* The hedgehogs are fixed at z-index 10 and are click-to-flip, so
+               the page content sits above them — otherwise a burst would bury
+               the controls that clear it. */
+            .nt-page {
                 position: relative;
-                z-index: 2000;
-                max-width: 34rem;
-                width: 100%;
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 14px;
-                padding: 2.25rem;
-                box-shadow: 0 12px 40px rgb(0 0 0 / 8%);
-            }
-
-            h1 {
-                margin: 0 0 0.35rem;
-                font-size: clamp(1.9rem, 5vw, 2.6rem);
-                letter-spacing: -0.02em;
-            }
-
-            .tagline {
-                margin: 0 0 1.75rem;
-                color: var(--muted);
-            }
-
-            .controls {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.6rem;
-                margin-bottom: 1.5rem;
-            }
-
-            button {
-                flex: 1 1 auto;
-                padding: 0.7rem 1.15rem;
-                font: inherit;
-                font-weight: 600;
-                color: #fff;
-                background: var(--accent);
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                transition:
-                    transform 0.08s ease,
-                    filter 0.15s ease;
-            }
-
-            button.secondary {
-                color: var(--fg);
-                background: transparent;
-                border: 1px solid var(--border);
-            }
-
-            button:hover {
-                filter: brightness(1.08);
-            }
-
-            button:active {
-                transform: translateY(1px);
-            }
-
-            .options {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 1rem;
-                padding-top: 1.25rem;
-                border-top: 1px solid var(--border);
-                color: var(--muted);
-                font-size: 0.92rem;
-            }
-
-            label {
-                display: flex;
-                align-items: center;
-                gap: 0.4rem;
-                cursor: pointer;
-            }
-
-            .hint {
-                margin: 1.25rem 0 0;
-                color: var(--muted);
-                font-size: 0.88rem;
-            }
-
-            kbd {
-                padding: 0.1rem 0.4rem;
-                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-                font-size: 0.85em;
-                background: var(--bg);
-                border: 1px solid var(--border);
-                border-radius: 4px;
-            }
-
-            #status {
-                min-height: 1.4em;
-                margin-top: 0.5rem;
-                color: var(--accent);
-                font-size: 0.88rem;
-                font-weight: 600;
-            }
-
-            a {
-                color: var(--accent);
+                z-index: 20;
             }
         </style>
     </head>
     <body>
-        <main>
-            <h1>Hedgehogify</h1>
-            <p class="tagline">The best way to get hedgehogs to explode all over a website.</p>
-
-            <div class="controls">
-                <button id="burst" type="button">Burst!</button>
-                <button id="burst-small" type="button" class="secondary">Just a few</button>
-                <button id="clear" type="button" class="secondary">Clear</button>
-            </div>
-
-            <div class="options">
-                <label><input id="disable-steve" type="checkbox" /> Disable Steve</label>
-                <label><input id="disable-monsters" type="checkbox" /> Disable monsters</label>
-            </div>
-
-            <p class="hint">
-                Or enter the Konami code — <kbd>↑</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>↓</kbd> <kbd>←</kbd>
-                <kbd>→</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>B</kbd> <kbd>A</kbd>
+        <main class="nt-page">
+            <h1 class="nt-title">hedgehog<em>ify</em></h1>
+            <p class="nt-lede">
+                The best way to get hedgehogs to explode all over a website. Click one to spin it.
             </p>
-            <p id="status" role="status"></p>
 
-            <p class="hint">
-                <a href="https://github.com/nowtwo-llc/nowtwo-hedgehogify">Source on GitHub</a>
-            </p>
+            <ul class="nt-meta">
+                <li>v3.0.1</li>
+                <li>0 dependencies</li>
+                <li>29 characters</li>
+                <li>MIT</li>
+            </ul>
+
+            <section class="nt-section">
+                <h2 class="nt-label">Try it</h2>
+                <div class="nt-controls">
+                    <button id="burst" type="button" class="nt-trigger">Burst</button>
+                    <button id="burst-small" type="button" class="nt-btn">Just a few</button>
+                    <button id="clear" type="button" class="nt-btn">Clear</button>
+                </div>
+                <p id="status" class="nt-status" role="status"></p>
+                <p class="nt-note">
+                    Or enter the Konami code — <kbd>↑</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>↓</kbd> <kbd>←</kbd>
+                    <kbd>→</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>B</kbd> <kbd>A</kbd>
+                </p>
+            </section>
+
+            <section class="nt-section">
+                <h2 class="nt-label">Cast</h2>
+                <div class="nt-options">
+                    <label><input id="disable-steve" type="checkbox" /> Disable Steve</label>
+                    <label><input id="disable-monsters" type="checkbox" /> Disable monsters</label>
+                </div>
+                <p class="nt-note">Filtering happens when the instance is built, so toggling one rebuilds it.</p>
+            </section>
+
+            <section class="nt-section">
+                <h2 class="nt-label">Install</h2>
+                <pre class="nt-code"><code>npm install @nowtwo-llc/hedgehogify</code></pre>
+            </section>
+
+            <section class="nt-section">
+                <h2 class="nt-label">Use</h2>
+                <pre class="nt-code"><code>import HedgeHogify from '@nowtwo-llc/hedgehogify';
+// or: import { HedgeHogify } from '@nowtwo-llc/hedgehogify';
+
+const hedgehogify = new HedgeHogify();
+
+hedgehogify.burst();              // 50 hedgehogs, cleared after 10s
+hedgehogify.burst(8);             // just a few
+hedgehogify.konami(() =&gt; { ... }); // wire it to the Konami code
+HedgeHogify.clear();              // remove them now</code></pre>
+            </section>
+
+            <section class="nt-section">
+                <h2 class="nt-label">Events</h2>
+                <ul class="nt-list">
+                    <li><strong>he:hedgehogify:start</strong> — a burst began</li>
+                    <li><strong>he:hedgehogify:stop</strong> — the hedgehogs cleared</li>
+                </ul>
+                <p class="nt-note">Both are dispatched on <code>document</code>.</p>
+            </section>
+
+            <footer class="nt-footer">
+                <p>MIT licensed · <a href="https://github.com/nowtwo-llc/nowtwo-hedgehogify">Source on GitHub</a></p>
+                <p>Maintained by <a href="https://www.nowtwo.io/">NowTwo LLC</a>.</p>
+            </footer>
         </main>
 
         <script src="../dist/hedgehogify.min.js"></script>
