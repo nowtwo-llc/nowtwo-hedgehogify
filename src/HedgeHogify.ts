@@ -95,8 +95,10 @@ const LOADING_SCRIPT_SRC: string =
 /**
  * A lightweight library that makes animated hedgehog characters burst across websites.
  *
- * Images are bundled with the package; nothing is requested from a backend service, and
- * no information about the host page leaves the browser.
+ * Images are bundled with the package, so there is no backend and nothing about the host
+ * page is ever transmitted. The images themselves are still fetched over the network from
+ * whatever {@link HedgeHogifyConfig.imageBaseUrl} resolves to — set it to your own origin
+ * to keep every request first-party.
  */
 export class HedgeHogify {
     private _hedgeHogifyCount = 0;

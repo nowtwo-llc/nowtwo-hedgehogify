@@ -146,8 +146,19 @@ Drop new files in and run `npm run assets` to regenerate the manifest. See
 
 ## Privacy
 
-Everything runs in the browser. No request is made to any backend, and no information about
-the host page leaves the visitor's machine.
+Everything runs in the browser. There is no backend, no tracking, and nothing about the host
+page — its URL, its visitors, or their activity — is ever transmitted anywhere.
+
+The only network requests are for the images themselves, and where those come from is up to
+you:
+
+- **Script tag.** Images load from alongside the bundle, so they are served by whoever serves
+  the script — your own origin, or the CDN you chose.
+- **Bundlers.** Set `imageBaseUrl` to a path on your own origin and the images never leave it.
+- **Bundlers without `imageBaseUrl`.** The images fall back to this project's GitHub Pages
+  deployment. That is a normal cross-origin image request, so the browser sends your site's
+  origin — not the page URL — to GitHub, the same as embedding any third-party asset. Set
+  `imageBaseUrl` to avoid it.
 
 ## Development
 
