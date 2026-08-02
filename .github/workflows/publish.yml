@@ -1,74 +1,114 @@
 name: Publish
 
 on:
-    release:
-        types: [published]
-    workflow_dispatch:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
 
 permissions:
-    contents: read
-    # packages: write for GitHub Packages; id-token: write for npm provenance,
-    # which signs the tarball with an OIDC token proving it was built from this
-    # repo and commit.
-    packages: write
-    id-token: write
+  contents: read
 
+# npm is the registry consumers use. GitHub Packages is an internal backup
+# mirror. Both orgs are named "nowtwo-llc", so the same @nowtwo-llc/hedgehogify
+# name publishes to both with no rewriting.
+#
+# publishConfig in package.json deliberately does NOT pin a registry: it would
+# override the registry-url each job sets below and send both publishes to the
+# same place.
 jobs:
-    publish:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v5
+  npm:
+    name: npm (public)
+    runs-on: ubuntu-latest
 
-            - uses: actions/setup-node@v5
-              with:
-                  node-version: 22.x
-                  cache: npm
-                  registry-url: https://registry.npmjs.org
-                  scope: '@nowtwo-llc'
+    # Gates the release behind the required reviewers configured on this
+    # environment, so pushing a v* tag queues a publish rather than performing
+    # one. The name must match the "Environment" field on the trusted publisher
+    # at npmjs.com — GitHub puts it in the OIDC claim, and npm rejects the
+    # publish if the two disagree.
+    environment: npm-publish
 
-            - run: npm ci
+    permissions:
+      contents: read
+      # Required for npm trusted publishing (OIDC). Without it the publish
+      # falls back to looking for a token and fails.
+      id-token: write
 
-            - name: Verify the release tag matches package.json
-              run: |
-                  PKG_VERSION="v$(node -p "require('./package.json').version")"
-                  if [ "${{ github.event_name }}" = "release" ] && [ "$PKG_VERSION" != "${{ github.ref_name }}" ]; then
-                    echo "Tag ${{ github.ref_name }} does not match package.json ($PKG_VERSION)" >&2
-                    exit 1
-                  fi
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-            - name: Test
-              run: npm test
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          # Trusted publishing needs Node >= 22.14.0.
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+          cache: npm
 
-            # publishConfig.access is "public": scoped packages default to
-            # restricted, which fails with a 402 on a free npm org.
-            #
-            # prepublishOnly runs build:prod, so dist/ is produced here rather than
-            # being committed.
-            #
-            # NPM_TOKEN must be an "Automation" token so it bypasses 2FA.
-            - name: Publish to npm
-              run: npm publish --provenance
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # setup-node ships npm 10.x, but trusted publishing needs >= 11.5.1.
+      - name: Upgrade npm
+        run: |
+          npm install -g npm@latest
+          npm --version
 
-            # GitHub Packages is an internal backup mirror. The npm and GitHub orgs
-            # are both `nowtwo-llc`, so the same package name publishes to both and
-            # only the registry changes.
-            - uses: actions/setup-node@v5
-              with:
-                  node-version: 22.x
-                  registry-url: https://npm.pkg.github.com
-                  scope: '@nowtwo-llc'
+      - name: Install dependencies
+        run: npm ci
 
-            # publishConfig.registry overrides the --registry flag, so it has to be
-            # rewritten rather than passed on the command line. The CI checkout is
-            # ephemeral, so nothing is committed.
-            - name: Point publishConfig at GitHub Packages
-              run: npm pkg set publishConfig.registry="https://npm.pkg.github.com/"
+      # A tag that disagrees with package.json publishes a surprising version,
+      # and neither registry will let you take it back.
+      - name: Verify tag matches package version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME implies version $TAG_VERSION but package.json is $PKG_VERSION" >&2
+            exit 1
+          fi
+          echo "Publishing version $PKG_VERSION"
 
-            # No --provenance here: GitHub Packages does not accept provenance
-            # attestations, and passing the flag fails the publish.
-            - name: Publish to GitHub Packages
-              run: npm publish
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Typecheck
+        run: npm run typecheck
+
+      # lint:check rather than lint: the latter runs eslint --fix, which would
+      # repair violations in the ephemeral checkout and pass regardless.
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Test
+        run: npm test
+
+      # No NODE_AUTH_TOKEN: the OIDC token from `id-token: write` authenticates
+      # against the trusted publisher configured on npmjs.com, and npm attaches
+      # build provenance automatically.
+      #
+      # `prepublishOnly` runs the production build, so dist/ is always freshly
+      # generated from the tagged source rather than whatever was on disk.
+      - name: Publish to npm
+        run: npm publish
+
+  github-packages:
+    name: GitHub Packages (internal backup)
+    runs-on: ubuntu-latest
+    # npm is the registry consumers use; only mirror to the internal backup
+    # once that publish has actually succeeded.
+    needs: npm
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22.x
+          registry-url: https://npm.pkg.github.com
+          scope: '@nowtwo-llc'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

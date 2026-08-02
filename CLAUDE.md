@@ -99,6 +99,12 @@ sibling `nt-fireworksify` repo:
 | `hedgehogify.mjs`      | ESM        | The `import` condition. Unminified so consumers can tree-shake. |
 | `hedgehogify.cjs`      | CommonJS   | The `require` condition.                  |
 
+`HedgeHogify` is exported both as a named export and as the default, so either import style
+works. **The UMD bundle builds from `src/umd.ts`, not `src/HedgeHogify.ts`** — that output
+has no library name, so webpack copies every export key onto the global object, and building
+it from the module with the default export produced a literal `window.default`. `src/umd.ts`
+re-exports the named API only. Do not collapse the two entries back together.
+
 Declarations are emitted separately by `tsc -p tsconfig.types.json` into `dist/types/`.
 ts-loader has `declaration: false` because three parallel compilers would otherwise race to
 write the same `.d.ts` files.
@@ -108,6 +114,19 @@ declarations — so it can cover `src`, `tests`, and `example` for the editor, t
 type-aware lint rules.
 
 ## Versions & Constraints
+
+`npm run update` rejects `typescript` and `jsdom` because ncu does not read dependabot's
+ignore rules and would otherwise re-propose both on every run. `npm run update:check` is the
+unfiltered view — run it to see what the pins are currently holding back. The pins are a
+speed bump, not a decision; each has a defined exit condition:
+
+| Pinned       | Held back by                                                        | Lift it when                                                                 |
+| ------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `typescript` | typescript-eslint peers `<6.1.0`; TS 7 is the Go port with no JS compiler API, which ts-loader drives | typescript-eslint accepts 7 **and** ts-loader supports it or is replaced. This is a migration, not a bump. |
+| `jsdom`      | Majors raise the Node floor (30 already needs >= 22.22.2, which broke the Node 20 CI leg) | You intend to raise the CI Node floor in the same change.                     |
+
+Delete the entry from `--reject` and from `.github/dependabot.yml` together — they exist to
+enforce the same decision from two directions.
 
 - **Development requires Node 22+.** jsdom 30 declares
   `^22.22.2 || ^24.15.0 || >=26.0.0` and dies on Node 20 with
@@ -141,22 +160,29 @@ root redirect, so the page's relative `../dist/` and `../assets/` paths work ide
 locally and deployed — nothing is rewritten. `scripts/serve-demo.mjs` redirects `/` to
 `/example/` for the same reason.
 
-`.github/workflows/publish.yml` publishes to both registries on release, verifying the tag
-matches `package.json` first. It runs npm, then reconfigures and publishes to GitHub
-Packages. Load-bearing details:
+`.github/workflows/publish.yml` fires on a `v*` tag and has two jobs: `npm` publishes to the
+public registry, then `github-packages` mirrors it (`needs: npm`, so the backup only runs
+once the real publish succeeded). Load-bearing details:
 
-- `publishConfig.access` must stay `public`. Scoped packages default to restricted, which
-  fails with a 402 on a free npm org.
-- `id-token: write` is required for `npm publish --provenance` on npm. **Do not add
-  `--provenance` to the GitHub Packages step** — that registry rejects provenance
-  attestations and the publish fails.
-- The GitHub Packages step rewrites both `name` and `publishConfig.registry` via
-  `npm pkg set`. Mutating `publishConfig.registry` is necessary because `publishConfig`
-  overrides the `--registry` CLI flag. The CI checkout is ephemeral, so nothing is committed.
-- Auth differs per registry: `NPM_TOKEN` (an **Automation** token, so it bypasses 2FA) for
-  npm, and the built-in `GITHUB_TOKEN` plus `packages: write` for GitHub Packages.
+- **`publishConfig` must not pin a `registry`.** It overrides the `registry-url` each job
+  sets, so pinning one sends both publishes to the same place. Only `access: public` belongs
+  there — scoped packages default to restricted and fail with a 402 on a free npm org.
+- npm uses **trusted publishing (OIDC)**, not a token. That needs `id-token: write`, the
+  `npm-publish` environment, Node >= 22.14.0, and npm >= 11.5.1 — hence the explicit
+  `npm install -g npm@latest` step, since setup-node still ships npm 10.x. Provenance is
+  attached automatically; there is no `--provenance` flag and no `NPM_TOKEN` secret.
+- The `npm-publish` environment name must match the "Environment" field on the trusted
+  publisher at npmjs.com. GitHub puts it in the OIDC claim and npm rejects a mismatch.
+- **Never add `--provenance` to the GitHub Packages job** — that registry rejects provenance
+  attestations and the publish fails. It authenticates with the built-in `GITHUB_TOKEN` plus
+  `packages: write`.
+- The tag-vs-`package.json` check runs before anything is published. A wrong version cannot
+  be unpublished from either registry.
 
-The npm side can later drop `NPM_TOKEN` by switching to trusted publishing (OIDC).
+`.github/dependabot.yml` covers github-actions (weekly — it is what moves the SHA pins in
+the workflows) and npm, grouping routine dev-dependency churn into one PR. TypeScript and
+jsdom majors are ignored on purpose: TS 7 drops the JS compiler API that ts-loader needs,
+and jsdom majors move the Node floor. Both are deliberate migrations, not bumps.
 
 ## Code Style
 

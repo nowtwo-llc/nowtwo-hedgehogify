@@ -2,7 +2,7 @@
     "name": "@nowtwo-llc/hedgehogify",
     "version": "3.0.1",
     "description": "The best way to get hedgehogs to explode all over a website.",
-    "author": "NowTwo LLC",
+    "author": "NowTwo LLC <support@nowtwo.io> (https://www.nowtwo.io/)",
     "license": "MIT",
     "homepage": "https://github.com/nowtwo-llc/nowtwo-hedgehogify#readme",
     "repository": {
@@ -44,7 +44,6 @@
         "assets/"
     ],
     "publishConfig": {
-        "registry": "https://registry.npmjs.org/",
         "access": "public"
     },
     "engines": {
@@ -62,20 +61,24 @@
         "eslint": "eslint --fix --cache --color .",
         "eslint:format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,mjs,json}\" && eslint --fix .",
         "lint": "npm run eslint",
+        "lint:check": "eslint --color --max-warnings=0 .",
         "prepublishOnly": "npm run build:prod",
         "test": "npm run assets && vitest run",
         "test:watch": "vitest",
+        "test:coverage": "npm run assets && vitest run --coverage",
         "typecheck": "npm run assets && tsc -p tsconfig.json --noEmit",
-        "update": "npm-check-updates -u",
-        "watch": "npm run assets && cross-env NODE_ENV=development webpack --progress --watch"
+        "update": "npm-check-updates -u --reject typescript,jsdom",
+        "watch": "npm run assets && cross-env NODE_ENV=development webpack --progress --watch",
+        "update:check": "npm-check-updates"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@vitest/coverage-v8": "^4.1.10",
         "cross-env": "^10.1.0",
         "eslint": "^10.8.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.6",
-        "globals": "^17.8.0",
+        "globals": "^17.9.0",
         "jsdom": "^30.0.1",
         "npm-check-updates": "^23.0.0",
         "prettier": "^3.9.6",

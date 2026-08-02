@@ -348,3 +348,11 @@ export class HedgeHogify {
         document.querySelectorAll(`.${ELEMENT_CLASS}`).forEach((el) => el.remove());
     }
 }
+
+/**
+ * Also available as the default export, so both import styles work:
+ *
+ *     import HedgeHogify from '@nowtwo-llc/hedgehogify';
+ *     import { HedgeHogify } from '@nowtwo-llc/hedgehogify';
+ */
+export default HedgeHogify;
