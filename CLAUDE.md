@@ -6,7 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hedgehogify (`@nowtwo-llc/hedgehogify`) is a lightweight, dependency-free TypeScript library
 that makes animated hedgehog characters burst across websites. It ships as UMD + ESM + CJS
-and is published to GitHub Packages under the `nowtwo-llc` org.
+and is published as `@nowtwo-llc/hedgehogify` to two registries:
+
+| Registry        | Role                                                                    |
+| --------------- | ----------------------------------------------------------------------- |
+| npm (public)    | **Primary.** The only one documented publicly. Published with provenance. |
+| GitHub Packages | Internal backup mirror. Not mentioned in the README.                     |
+
+The npm org and the GitHub org are both `nowtwo-llc`, so one package name works for both —
+GitHub Packages requires the scope to match the owning GitHub org, and it does.
+
+Keep the README focused on npm only. The GitHub Packages copy exists for internal use and
+documenting it publicly would push consumers toward a registry that demands authentication
+even for public packages.
 
 Owned by **NowTwo LLC**. All naming, metadata, copyright and documentation must stay under
 NowTwo LLC and the `@nowtwo-llc` scope; do not reintroduce references to prior owners of
@@ -129,8 +141,22 @@ root redirect, so the page's relative `../dist/` and `../assets/` paths work ide
 locally and deployed — nothing is rewritten. `scripts/serve-demo.mjs` redirects `/` to
 `/example/` for the same reason.
 
-`.github/workflows/publish.yml` publishes to GitHub Packages on release, verifying the tag
-matches `package.json` first.
+`.github/workflows/publish.yml` publishes to both registries on release, verifying the tag
+matches `package.json` first. It runs npm, then reconfigures and publishes to GitHub
+Packages. Load-bearing details:
+
+- `publishConfig.access` must stay `public`. Scoped packages default to restricted, which
+  fails with a 402 on a free npm org.
+- `id-token: write` is required for `npm publish --provenance` on npm. **Do not add
+  `--provenance` to the GitHub Packages step** — that registry rejects provenance
+  attestations and the publish fails.
+- The GitHub Packages step rewrites both `name` and `publishConfig.registry` via
+  `npm pkg set`. Mutating `publishConfig.registry` is necessary because `publishConfig`
+  overrides the `--registry` CLI flag. The CI checkout is ephemeral, so nothing is committed.
+- Auth differs per registry: `NPM_TOKEN` (an **Automation** token, so it bypasses 2FA) for
+  npm, and the built-in `GITHUB_TOKEN` plus `packages: write` for GitHub Packages.
+
+The npm side can later drop `NPM_TOKEN` by switching to trusted publishing (OIDC).
 
 ## Code Style
 

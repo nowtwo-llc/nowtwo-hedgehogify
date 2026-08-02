@@ -1,4 +1,4 @@
-name: Publish to GitHub Packages
+name: Publish
 
 on:
     release:
@@ -7,6 +7,9 @@ on:
 
 permissions:
     contents: read
+    # packages: write for GitHub Packages; id-token: write for npm provenance,
+    # which signs the tarball with an OIDC token proving it was built from this
+    # repo and commit.
     packages: write
     id-token: write
 
@@ -20,7 +23,7 @@ jobs:
               with:
                   node-version: 22.x
                   cache: npm
-                  registry-url: https://npm.pkg.github.com
+                  registry-url: https://registry.npmjs.org
                   scope: '@nowtwo-llc'
 
             - run: npm ci
@@ -36,8 +39,36 @@ jobs:
             - name: Test
               run: npm test
 
-            # prepublishOnly runs build:prod, so dist/ is produced here.
-            - name: Publish
+            # publishConfig.access is "public": scoped packages default to
+            # restricted, which fails with a 402 on a free npm org.
+            #
+            # prepublishOnly runs build:prod, so dist/ is produced here rather than
+            # being committed.
+            #
+            # NPM_TOKEN must be an "Automation" token so it bypasses 2FA.
+            - name: Publish to npm
               run: npm publish --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            # GitHub Packages is an internal backup mirror. The npm and GitHub orgs
+            # are both `nowtwo-llc`, so the same package name publishes to both and
+            # only the registry changes.
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22.x
+                  registry-url: https://npm.pkg.github.com
+                  scope: '@nowtwo-llc'
+
+            # publishConfig.registry overrides the --registry flag, so it has to be
+            # rewritten rather than passed on the command line. The CI checkout is
+            # ephemeral, so nothing is committed.
+            - name: Point publishConfig at GitHub Packages
+              run: npm pkg set publishConfig.registry="https://npm.pkg.github.com/"
+
+            # No --provenance here: GitHub Packages does not accept provenance
+            # attestations, and passing the flag fails the publish.
+            - name: Publish to GitHub Packages
+              run: npm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
