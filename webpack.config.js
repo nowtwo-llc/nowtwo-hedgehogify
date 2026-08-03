@@ -57,7 +57,7 @@ const umdConfig = {
     // export onto the global object, and the default export would land there
     // as `window.default`.
     entry: './src/umd.ts',
-    target: ['web', 'es2018'],
+    target: ['web', 'es2020'],
     output: {
         path: BUILD_DIR,
         libraryTarget: 'umd',
@@ -78,7 +78,7 @@ const umdConfig = {
 const esmConfig = {
     ...baseConfig,
     name: 'esm',
-    target: ['web', 'es2018'],
+    target: ['web', 'es2020'],
     experiments: { outputModule: true },
     output: {
         path: BUILD_DIR,
@@ -97,7 +97,7 @@ const esmConfig = {
 const cjsConfig = {
     ...baseConfig,
     name: 'cjs',
-    target: ['web', 'es2018'],
+    target: ['web', 'es2020'],
     output: {
         path: BUILD_DIR,
         filename: 'hedgehogify.cjs',

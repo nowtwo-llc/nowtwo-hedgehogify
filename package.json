@@ -2,16 +2,6 @@
     "name": "@nowtwo-llc/hedgehogify",
     "version": "3.1.0",
     "description": "The best way to get hedgehogs to explode all over a website.",
-    "author": "NowTwo LLC <support@nowtwo.io> (https://www.nowtwo.io/)",
-    "license": "MIT",
-    "homepage": "https://github.com/nowtwo-llc/nowtwo-hedgehogify#readme",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/nowtwo-llc/nowtwo-hedgehogify.git"
-    },
-    "bugs": {
-        "url": "https://github.com/nowtwo-llc/nowtwo-hedgehogify/issues"
-    },
     "keywords": [
         "hedgehog",
         "animation",
@@ -23,6 +13,16 @@
         "easter-egg",
         "konami"
     ],
+    "author": "NowTwo LLC <support@nowtwo.io> (https://www.nowtwo.io/)",
+    "license": "MIT",
+    "homepage": "https://github.com/nowtwo-llc/nowtwo-hedgehogify#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nowtwo-llc/nowtwo-hedgehogify.git"
+    },
+    "bugs": {
+        "url": "https://github.com/nowtwo-llc/nowtwo-hedgehogify/issues"
+    },
     "main": "./dist/hedgehogify.cjs",
     "module": "./dist/hedgehogify.mjs",
     "types": "./dist/types/HedgeHogify.d.ts",
@@ -43,11 +43,11 @@
         "dist/",
         "assets/"
     ],
-    "publishConfig": {
-        "access": "public"
-    },
     "engines": {
         "node": ">=20"
+    },
+    "publishConfig": {
+        "access": "public"
     },
     "scripts": {
         "assets": "node scripts/generate-assets.mjs",
@@ -62,14 +62,15 @@
         "eslint:format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,mjs,json}\" && eslint --fix .",
         "lint": "npm run eslint",
         "lint:check": "eslint --color --max-warnings=0 .",
+        "lint:fix": "npm run eslint",
         "prepublishOnly": "npm run build:prod",
         "test": "npm run assets && vitest run",
-        "test:watch": "vitest",
         "test:coverage": "npm run assets && vitest run --coverage",
+        "test:watch": "vitest",
         "typecheck": "npm run assets && tsc -p tsconfig.json --noEmit",
         "update": "npm-check-updates -u --reject typescript,jsdom",
-        "watch": "npm run assets && cross-env NODE_ENV=development webpack --progress --watch",
-        "update:check": "npm-check-updates"
+        "update:check": "npm-check-updates",
+        "watch": "npm run assets && cross-env NODE_ENV=development webpack --progress --watch"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",

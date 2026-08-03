@@ -4,14 +4,14 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "lib": ["es2018", "dom", "dom.iterable"],
+        "lib": ["es2020", "dom", "dom.iterable"],
         "module": "esnext",
         "moduleResolution": "bundler",
         "removeComments": true,
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": true,
-        "target": "es2018"
+        "target": "es2020"
     },
     // No outDir/rootDir here: webpack owns the bundle output and
     // tsconfig.types.json owns declaration emit. Keeping this config
