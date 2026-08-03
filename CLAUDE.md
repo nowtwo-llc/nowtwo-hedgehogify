@@ -33,7 +33,7 @@ npm run test:watch    # Vitest in watch mode
 npm run build:prod    # UMD + ESM + CJS into dist/, plus declarations into dist/types/
 npm run build:dev     # UMD only, into build/
 npm run assets        # Regenerate src/assets.generated.ts from assets/
-npm run lint          # ESLint with auto-fix
+npm run lint          # oxlint + Prettier, with fixes
 npm run typecheck     # tsc -p tsconfig.json --noEmit
 ```
 
@@ -106,7 +106,7 @@ it from the module with the default export produced a literal `window.default`. 
 re-exports the named API only. Do not collapse the two entries back together.
 
 Declarations are emitted separately by `tsc -p tsconfig.types.json` into `dist/types/`.
-ts-loader has `declaration: false` because three parallel compilers would otherwise race to
+esbuild-loader never emits declarations, so `tsc` is their only source. This also avoids three parallel compilers racing to
 write the same `.d.ts` files.
 
 `tsconfig.json` is deliberately emit-free — webpack owns bundles, `tsconfig.types.json` owns
@@ -115,15 +115,14 @@ type-aware lint rules.
 
 ## Versions & Constraints
 
-`npm run update` rejects `typescript` and `jsdom` because ncu does not read dependabot's
-ignore rules and would otherwise re-propose both on every run. `npm run update:check` is the
-unfiltered view — run it to see what the pins are currently holding back. The pins are a
-speed bump, not a decision; each has a defined exit condition:
+`npm run update` rejects `jsdom` because ncu does not read dependabot's ignore rules and
+would otherwise re-propose it on every run. `npm run update:check` is the unfiltered view —
+run it to see what the pin is currently holding back. The pin is a speed bump, not a
+decision; it has a defined exit condition:
 
-| Pinned       | Held back by                                                        | Lift it when                                                                 |
-| ------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `typescript` | typescript-eslint peers `<6.1.0`; TS 7 is the Go port with no JS compiler API, which ts-loader drives | typescript-eslint accepts 7 **and** ts-loader supports it or is replaced. This is a migration, not a bump. |
-| `jsdom`      | Majors raise the Node floor (30 already needs >= 22.22.2, which broke the Node 20 CI leg) | You intend to raise the CI Node floor in the same change.                     |
+| Pinned  | Held back by                                                                             | Lift it when                                             |
+| ------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `jsdom` | Majors raise the Node floor (30 already needs >= 22.22.2, which broke the Node 20 CI leg) | You intend to raise the CI Node floor in the same change. |
 
 Delete the entry from `--reject` and from `.github/dependabot.yml` together — they exist to
 enforce the same decision from two directions.
@@ -135,13 +134,23 @@ enforce the same decision from two directions.
   this reason. `engines.node` stays at `>=20` on purpose: that describes consumers, and the
   published package is browser code that never executes in Node.
 
-- **TypeScript is pinned to 6.x.** `typescript-eslint` peers `typescript <6.1.0`, so TS 7 is
-  blocked until that lifts. Unlike `nt-fireworksify`, this repo already dropped `target: es5`
-  and `moduleResolution: node` for ES2018 + `bundler`, so it needs no `ignoreDeprecations`.
-- **ESLint 10 flat config** (`eslint.config.mjs`): `@eslint/js` + typescript-eslint
-  (type-checked) + Prettier. Eslintrc is not supported by ESLint 10 at all.
-- Type-aware rules run on TS only; `**/*.js` opts out via `disableTypeChecked` since those
-  files aren't in `tsconfig.json`.
+- **TypeScript 7**, the native Go port. Reaching it meant replacing **ts-loader with
+  esbuild-loader** and **typescript-eslint with oxlint** — both of the old tools call the TS 6
+  JS compiler API, which TS 7 does not expose. typescript-eslint refuses TS 7 with an explicit
+  runtime guard, and ESLint cannot parse TypeScript without it, so ESLint had to go too.
+- **Do not add a second TypeScript** via the `@typescript/typescript6` shim to get
+  typescript-eslint back. It installs, but two packages then ship a `tsc` binary and
+  `node_modules/.bin/tsc` resolves by install order — a typecheck that silently runs the
+  wrong compiler.
+- **esbuild does not type-check.** `npm run build` will bundle code with type errors;
+  `npm run typecheck` is the only gate, and CI runs it first.
+- **oxlint** (`.oxlintrc.json`), scoped to the `correctness` category — deliberately the same
+  surface as the `eslint:recommended` this repo had before, so the toolchain swap did not
+  quietly change what is linted. `suspicious` and `perf` pull in unicorn opinions that were
+  never enabled here; opt into them as their own change.
+- **The trade-off is no type-aware rules** (`no-floating-promises` and friends). This library
+  has no `async`, `await` or `Promise` anywhere in `src/`, so it costs nothing here — but that
+  is why it was safe, not a general argument.
 - Test files disable `no-unused-expressions` for chai-style assertions.
 
 ## Testing
@@ -180,12 +189,11 @@ once the real publish succeeded). Load-bearing details:
   be unpublished from either registry.
 
 `.github/dependabot.yml` covers github-actions (weekly — it is what moves the SHA pins in
-the workflows) and npm, grouping routine dev-dependency churn into one PR. TypeScript and
-jsdom majors are ignored on purpose: TS 7 drops the JS compiler API that ts-loader needs,
-and jsdom majors move the Node floor. Both are deliberate migrations, not bumps.
+the workflows) and npm, grouping routine dev-dependency churn into one PR. jsdom majors are ignored on purpose: they move the Node floor. That is a deliberate
+migration, not a bump.
 
 ## Code Style
 
 - Prettier: 120 char width, 4-space indent, single quotes, no trailing commas, arrow parens
 - `no-underscore-dangle` is off (private fields use an underscore prefix)
-- `@typescript-eslint/no-explicit-any` is off
+- `typescript/no-explicit-any` is off

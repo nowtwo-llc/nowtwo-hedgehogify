@@ -14,18 +14,17 @@ const resolve = {
     symlinks: false
 };
 
-// Declarations are emitted once by `npm run build:types`. Without this the three
-// production compilers would each race to write the same .d.ts files.
+// esbuild-loader rather than ts-loader: TypeScript 7 is the native Go port and
+// exposes no JS compiler API, so ts-loader cannot run against it. esbuild only
+// strips types — `npm run typecheck` is the type gate and `npm run build:types`
+// is the only source of declarations.
 const tsRule = {
     test: /\.ts$/,
-    use: {
-        loader: 'ts-loader',
-        options: {
-            compilerOptions: {
-                declaration: false,
-                declarationMap: false
-            }
-        }
+    loader: 'esbuild-loader',
+    options: {
+        loader: 'ts',
+        // Keep in step with `target` in tsconfig.json and the config targets below.
+        target: 'es2020'
     }
 };
 
