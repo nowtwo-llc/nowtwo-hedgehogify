@@ -1,8 +1,7 @@
 # Hedgehogify
 
-[![npm](https://img.shields.io/npm/v/@nowtwo-llc/hedgehogify.svg)](https://www.npmjs.com/package/@nowtwo-llc/hedgehogify)
 [![CI](https://github.com/nowtwo-llc/nowtwo-hedgehogify/actions/workflows/ci.yml/badge.svg)](https://github.com/nowtwo-llc/nowtwo-hedgehogify/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 The best way to get hedgehogs to explode all over a website.
 

@@ -6,19 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hedgehogify (`@nowtwo-llc/hedgehogify`) is a lightweight, dependency-free TypeScript library
 that makes animated hedgehog characters burst across websites. It ships as UMD + ESM + CJS
-and is published as `@nowtwo-llc/hedgehogify` to two registries:
+and is published as `@nowtwo-llc/hedgehogify` to the **public npm registry only**, with
+provenance.
 
-| Registry        | Role                                                                    |
-| --------------- | ----------------------------------------------------------------------- |
-| npm (public)    | **Primary.** The only one documented publicly. Published with provenance. |
-| GitHub Packages | Internal backup mirror. Not mentioned in the README.                     |
-
-The npm org and the GitHub org are both `nowtwo-llc`, so one package name works for both —
-GitHub Packages requires the scope to match the owning GitHub org, and it does.
-
-Keep the README focused on npm only. The GitHub Packages copy exists for internal use and
-documenting it publicly would push consumers toward a registry that demands authentication
-even for public packages.
+There is no second registry. A GitHub Packages mirror was published previously and has been
+removed: it required an access token even for public packages, which is pure friction for a
+public library. Do not reintroduce it.
 
 Owned by **NowTwo LLC**. All naming, metadata, copyright and documentation must stay under
 NowTwo LLC and the `@nowtwo-llc` scope; do not reintroduce references to prior owners of
@@ -169,24 +162,20 @@ root redirect, so the page's relative `../dist/` and `../assets/` paths work ide
 locally and deployed — nothing is rewritten. `scripts/serve-demo.mjs` redirects `/` to
 `/example/` for the same reason.
 
-`.github/workflows/publish.yml` fires on a `v*` tag and has two jobs: `npm` publishes to the
-public registry, then `github-packages` mirrors it (`needs: npm`, so the backup only runs
-once the real publish succeeded). Load-bearing details:
+`.github/workflows/publish.yml` fires on a `v*` tag and has a single `npm` job that publishes
+to the public registry. Load-bearing details:
 
-- **`publishConfig` must not pin a `registry`.** It overrides the `registry-url` each job
-  sets, so pinning one sends both publishes to the same place. Only `access: public` belongs
-  there — scoped packages default to restricted and fail with a 402 on a free npm org.
+- **`publishConfig` must not pin a `registry`.** It overrides the `registry-url` the job
+  sets. Only `access: public` belongs there — scoped packages default to restricted and fail
+  with a 402 on a free npm org.
 - npm uses **trusted publishing (OIDC)**, not a token. That needs `id-token: write`, the
   `npm-publish` environment, Node >= 22.14.0, and npm >= 11.5.1 — hence the explicit
   `npm install -g npm@latest` step, since setup-node still ships npm 10.x. Provenance is
   attached automatically; there is no `--provenance` flag and no `NPM_TOKEN` secret.
 - The `npm-publish` environment name must match the "Environment" field on the trusted
   publisher at npmjs.com. GitHub puts it in the OIDC claim and npm rejects a mismatch.
-- **Never add `--provenance` to the GitHub Packages job** — that registry rejects provenance
-  attestations and the publish fails. It authenticates with the built-in `GITHUB_TOKEN` plus
-  `packages: write`.
 - The tag-vs-`package.json` check runs before anything is published. A wrong version cannot
-  be unpublished from either registry.
+  be unpublished.
 
 `.github/dependabot.yml` covers github-actions (weekly — it is what moves the SHA pins in
 the workflows) and npm, grouping routine dev-dependency churn into one PR. jsdom majors are ignored on purpose: they move the Node floor. That is a deliberate
