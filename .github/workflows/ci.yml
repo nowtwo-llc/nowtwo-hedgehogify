@@ -23,7 +23,7 @@ jobs:
       # Node 22 is the floor: jsdom 30 requires ^22.22.2 || ^24.15.0 || >=26.0.0
       # and dies on Node 20 with "webidl.util.markAsUncloneable is not a
       # function" before any test runs. Node 20 is also past end-of-life.
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
